@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - UPTM Queue System</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="ri-graduation-cap-fill"></i>
+                    <div class="sidebar-logo-text">
+                        <h3>UPTM</h3>
+                        <p>BURSARY SYSTEM</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <i class="ri-dashboard-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="manage_queue.html" class="menu-item">
+                    <i class="ri-list-check"></i>
+                    <span>Manage Queue</span>
+                </a>
+                <a href="report.html" class="menu-item">
+                    <i class="ri-file-chart-fill"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="announcement.html" class="menu-item">
+                    <i class="ri-megaphone-fill"></i>
+                    <span>Announcement</span>
+                </a>
+                <a href="chat_support.html" class="menu-item">
+                    <i class="ri-chat-3-fill"></i>
+                    <span>Chat Support</span>
+                </a>
+                <a href="profile.html" class="menu-item active">
+                    <i class="ri-user-fill"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="counter-status-section">
+                    <div class="counter-status-info">
+                        <span class="status-label">Counter Status:</span>
+                        <span class="status-value" id="counterStatusText">OPEN</span>
+                    </div>
+                    <button class="toggle-counter-btn" id="toggleCounterBtn">
+                        <i class="ri-close-circle-line"></i>
+                        <span>Close Counter</span>
+                    </button>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="ri-logout-box-line"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>My Profile</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="user-name" id="topbarName">Loading...</div>
+                        <div class="user-counter">COUNTER <span id="topbarCounter">---</span> - <span class="user-status">ONLINE</span></div>
+                    </div>
+                    <div class="user-avatar" id="topbarAvatar">--</div>
+                </div>
+            </div>
+
+            <div class="profile-content">
+
+                <!-- Hero Card -->
+                <div class="profile-hero">
+                    <div class="avatar-wrapper">
+                        <div class="profile-avatar" id="profileAvatar">--</div>
+                        <div class="avatar-edit-btn" title="Change Avatar Color" onclick="toggleColorPicker()">
+                            <i class="ri-pencil-line"></i>
+                        </div>
+                    </div>
+
+                    <div class="profile-hero-info">
+                        <h2 id="heroName">Loading...</h2>
+                        <p class="staff-email" id="heroEmail">Loading...</p>
+                        <div class="profile-badges">
+                            <span class="badge blue"><i class="ri-shield-user-line"></i> Staff</span>
+                            <span class="badge green" id="heroBadgeStatus"><i class="ri-checkbox-circle-line"></i> Active</span>
+                            <span class="badge purple" id="heroBadgeCounter"><i class="ri-bank-card-line"></i> Counter ---</span>
+                        </div>
+
+                        <!-- Avatar Color Picker (hidden by default) -->
+                        <div class="avatar-color-section" id="colorPicker" style="display:none;">
+                            <p>Avatar Colour</p>
+                            <div class="color-options">
+                                <div class="color-dot" style="background: linear-gradient(135deg,#667eea,#764ba2);" data-gradient="linear-gradient(135deg,#667eea,#764ba2)" onclick="changeAvatarColor(this)"></div>
+                                <div class="color-dot" style="background: linear-gradient(135deg,#f093fb,#f5576c);" data-gradient="linear-gradient(135deg,#f093fb,#f5576c)" onclick="changeAvatarColor(this)"></div>
+                                <div class="color-dot" style="background: linear-gradient(135deg,#4facfe,#00f2fe);" data-gradient="linear-gradient(135deg,#4facfe,#00f2fe)" onclick="changeAvatarColor(this)"></div>
+                                <div class="color-dot" style="background: linear-gradient(135deg,#43e97b,#38f9d7);" data-gradient="linear-gradient(135deg,#43e97b,#38f9d7)" onclick="changeAvatarColor(this)"></div>
+                                <div class="color-dot" style="background: linear-gradient(135deg,#fa709a,#fee140);" data-gradient="linear-gradient(135deg,#fa709a,#fee140)" onclick="changeAvatarColor(this)"></div>
+                                <div class="color-dot" style="background: linear-gradient(135deg,#a18cd1,#fbc2eb);" data-gradient="linear-gradient(135deg,#a18cd1,#fbc2eb)" onclick="changeAvatarColor(this)"></div>
+                                <div class="color-dot" style="background: linear-gradient(135deg,#ff9a9e,#fecfef);" data-gradient="linear-gradient(135deg,#ff9a9e,#fecfef)" onclick="changeAvatarColor(this)"></div>
+                                <div class="color-dot selected" style="background: linear-gradient(135deg,#4169ff,#764ba2);" data-gradient="linear-gradient(135deg,#4169ff,#764ba2)" onclick="changeAvatarColor(this)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Grid -->
+                <div class="profile-grid">
+                    <!-- Staff Info -->
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="ri-user-3-line"></i>
+                            <h3>Staff Information</h3>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Full Name</span>
+                            <span class="info-value" id="infoName">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Email Address</span>
+                            <span class="info-value" id="infoEmail">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Staff ID</span>
+                            <span class="info-value highlight" id="infoStaffId">Loading...</span>
+                        </div>
+                    </div>
+
+                    <!-- Counter Info -->
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="ri-bank-card-line"></i>
+                            <h3>Counter Details</h3>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Assigned Counter</span>
+                            <span class="info-value highlight" id="infoCounter">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Counter Status</span>
+                            <span class="info-value" id="infoCounterStatus">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Last Login</span>
+                            <span class="info-value" id="infoLastLogin">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Password Card -->
+                <div class="password-card">
+                    <div class="password-card-header">
+                        <i class="ri-lock-password-line"></i>
+                        <h3>Change Password</h3>
+                    </div>
+                    <div class="password-form">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <div class="input-wrap">
+                                <input type="password" id="currentPassword" placeholder="Enter current password">
+                                <i class="ri-eye-off-line toggle-pw" onclick="togglePw('currentPassword', this)"></i>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <div class="input-wrap">
+                                <input type="password" id="newPassword" placeholder="Min 6 characters">
+                                <i class="ri-eye-off-line toggle-pw" onclick="togglePw('newPassword', this)"></i>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <div class="input-wrap">
+                                <input type="password" id="confirmPassword" placeholder="Repeat new password">
+                                <i class="ri-eye-off-line toggle-pw" onclick="togglePw('confirmPassword', this)"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                        <p class="pw-requirements"><i class="ri-information-line"></i> Password must be at least 6 characters</p>
+                        <button class="save-pw-btn" id="savePwBtn" onclick="changePassword()">
+                            <i class="ri-save-line"></i> Save Password
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2mr_mcnjwujkUs0BaIthRKzLbjheeFsU",
+            authDomain: "uptm-smartqueue.firebaseapp.com",
+            databaseURL: "https://uptm-smartqueue-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "uptm-smartqueue",
+            storageBucket: "uptm-smartqueue.firebasestorage.app",
+            messagingSenderId: "750707323311",
+            appId: "1:750707323311:web:d0289dab0557d3864f3f5a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let staffId = null;
+        let staffCounter = null;
+        let counterStatus = null;
+
+        // ===== AUTH CHECK =====
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) { redirectToLogin(); return; }
+
+            staffId = localStorage.getItem('currentStaffId');
+            if (!staffId) { redirectToLogin(); return; }
+
+            try {
+                const snap = await database.ref(`staff/${staffId}`).once('value');
+                if (!snap.exists() || snap.val().email !== user.email) { redirectToLogin(); return; }
+
+                await loadStaffProfile(snap.val());
+                await loadCounterStatus();
+            } catch (e) {
+                console.error(e);
+                redirectToLogin();
+            }
+        });
+
+        function redirectToLogin() {
+            localStorage.clear();
+            auth.signOut().finally(() => window.location.href = 'index.html');
+        }
+
+        // ===== LOAD PROFILE =====
+        async function loadStaffProfile(staffData) {
+  const initials = getInitials(staffData.name); // ✅ TAMBAH NI
+    const savedColor = staffData.avatarColor || localStorage.getItem('avatarColor') || 'linear-gradient(135deg,#667eea,#764ba2)';
+    localStorage.setItem('avatarColor', savedColor);
+
+            staffCounter = staffData.counter;
+
+            // Update UI
+            document.getElementById('profileAvatar').textContent = initials;
+            document.getElementById('profileAvatar').style.background = savedColor;
+            document.getElementById('topbarAvatar').textContent = initials;
+            document.getElementById('topbarAvatar').style.background = savedColor;
+
+            document.getElementById('heroName').textContent = staffData.name;
+            document.getElementById('heroEmail').textContent = staffData.email;
+            document.getElementById('heroBadgeCounter').innerHTML = `<i class="ri-bank-card-line"></i> ${staffData.counter}`;
+
+            document.getElementById('topbarName').textContent = staffData.name;
+            document.getElementById('topbarCounter').textContent = staffData.counter;
+
+            document.getElementById('infoName').textContent = staffData.name;
+            document.getElementById('infoEmail').textContent = staffData.email;
+            document.getElementById('infoStaffId').textContent = staffId;
+            document.getElementById('infoCounter').textContent = staffData.counter;
+
+            // Last login
+            if (staffData.lastLogin) {
+                const d = new Date(staffData.lastLogin);
+                document.getElementById('infoLastLogin').textContent = d.toLocaleString('en-MY');
+            } else {
+                document.getElementById('infoLastLogin').textContent = 'N/A';
+            }
+
+            // Mark selected color dot
+            document.querySelectorAll('.color-dot').forEach(dot => {
+                dot.classList.toggle('selected', dot.getAttribute('data-gradient') === savedColor);
+            });
+        }
+
+        // ===== COUNTER STATUS =====
+        async function loadCounterStatus() {
+            if (!staffCounter) return;
+            try {
+                const snap = await database.ref(`counters/${staffCounter}`).once('value');
+                const data = snap.val();
+                counterStatus = data?.status || 'open';
+                updateCounterUI(counterStatus);
+
+                database.ref(`counters/${staffCounter}/status`).on('value', (s) => {
+                    if (s.exists()) {
+                        counterStatus = s.val();
+                        updateCounterUI(counterStatus);
+                    }
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        function updateCounterUI(status) {
+            const statusText = document.getElementById('counterStatusText');
+            const toggleBtn = document.getElementById('toggleCounterBtn');
+            const infoStatus = document.getElementById('infoCounterStatus');
+
+            if (status === 'open') {
+                statusText.textContent = 'OPEN';
+                statusText.className = 'status-value open';
+                toggleBtn.className = 'toggle-counter-btn';
+                toggleBtn.innerHTML = '<i class="ri-close-circle-line"></i><span>Close Counter</span>';
+                if (infoStatus) infoStatus.innerHTML = '<span style="color:#27ae60;font-weight:600;">● Open</span>';
+            } else {
+                statusText.textContent = 'CLOSED';
+                statusText.className = 'status-value closed';
+                toggleBtn.className = 'toggle-counter-btn open-btn';
+                toggleBtn.innerHTML = '<i class="ri-check-circle-line"></i><span>Open Counter</span>';
+                if (infoStatus) infoStatus.innerHTML = '<span style="color:#e74c3c;font-weight:600;">● Closed</span>';
+            }
+        }
+
+        // ===== TOGGLE COUNTER =====
+        document.getElementById('toggleCounterBtn').addEventListener('click', async () => {
+            const newStatus = counterStatus === 'open' ? 'closed' : 'open';
+            if (!confirm(`Are you sure you want to ${newStatus === 'closed' ? 'close' : 'open'} your counter?`)) return;
+            try {
+                await database.ref(`counters/${staffCounter}`).update({
+                    status: newStatus,
+                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                });
+            } catch (e) { showToast('Error updating counter status', 'error'); }
+        });
+
+        // ===== CHANGE PASSWORD =====
+        async function changePassword() {
+            const current = document.getElementById('currentPassword').value.trim();
+            const newPw = document.getElementById('newPassword').value.trim();
+            const confirm = document.getElementById('confirmPassword').value.trim();
+            const btn = document.getElementById('savePwBtn');
+
+            if (!current || !newPw || !confirm) {
+                showToast('Please fill in all fields', 'error'); return;
+            }
+            if (newPw.length < 6) {
+                showToast('New password must be at least 6 characters', 'error'); return;
+            }
+            if (newPw !== confirm) {
+                showToast('New passwords do not match!', 'error'); return;
+            }
+            if (current === newPw) {
+                showToast('New password must be different from current password', 'error'); return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ri-loader-4-line"></i> Saving...';
+
+            try {
+                const user = auth.currentUser;
+                const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
+
+                await user.reauthenticateWithCredential(credential);
+                await user.updatePassword(newPw);
+
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+
+                showToast('✅ Password changed successfully!', 'success');
+            } catch (e) {
+                if (e.code === 'auth/wrong-password') {
+                    showToast('❌ Current password is incorrect!', 'error');
+                } else {
+                    showToast('Error: ' + e.message, 'error');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ri-save-line"></i> Save Password';
+            }
+        }
+
+        // ===== AVATAR COLOR =====
+        function toggleColorPicker() {
+            const picker = document.getElementById('colorPicker');
+            picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+        }
+
+async function changeAvatarColor(el) {
+    const gradient = el.getAttribute('data-gradient');
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+    el.classList.add('selected');
+
+    document.getElementById('profileAvatar').style.background = gradient;
+    document.getElementById('topbarAvatar').style.background = gradient;
+    localStorage.setItem('avatarColor', gradient);
+
+    // ✅ TAMBAH NI — save ke Firebase
+    try {
+        await database.ref(`staff/${staffId}`).update({ avatarColor: gradient });
+        showToast('Avatar colour updated!', 'success');
+    } catch (e) {
+        showToast('Error saving colour', 'error');
+    }
+}
+
+        // ===== TOGGLE PASSWORD VISIBILITY =====
+        function togglePw(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'ri-eye-line toggle-pw';
+            } else {
+                input.type = 'password';
+                icon.className = 'ri-eye-off-line toggle-pw';
+            }
+        }
+
+        // ===== LOGOUT =====
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to logout?')) return;
+            try {
+                if (staffId) {
+                    await database.ref(`staff/${staffId}`).update({ status: 'offline', lastLogout: firebase.database.ServerValue.TIMESTAMP });
+                }
+                if (staffCounter) {
+                    await database.ref(`counters/${staffCounter}`).update({ status: 'closed', currentServing: null, staffId: null, staffName: null, lastUpdated: firebase.database.ServerValue.TIMESTAMP });
+                }
+                localStorage.clear();
+                await auth.signOut();
+                window.location.href = 'index.html';
+            } catch (e) { showToast('Error logging out', 'error'); }
+        });
+
+        // ===== TOAST =====
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => { toast.className = 'toast'; }, 3500);
+        }
+
+        // ===== HELPERS =====
+        function getInitials(name) {
+            if (!name) return '--';
+            const parts = name.split(' ');
+            if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+            return name.substring(0, 2).toUpperCase();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - UPTM Queue System</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="report.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="ri-graduation-cap-fill"></i>
+                    <div class="sidebar-logo-text">
+                        <h3>UPTM</h3>
+                        <p>BURSARY SYSTEM</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <i class="ri-dashboard-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="manage_queue.html" class="menu-item">
+                    <i class="ri-list-check"></i>
+                    <span> Manage Queue</span>
+                </a>
+                <a href="report.html" class="menu-item active">
+                    <i class="ri-file-chart-fill"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="announcement.html" class="menu-item">
+                    <i class="ri-megaphone-fill"></i>
+                    <span>Announcement</span>
+                </a>
+                <a href="chat_support.html" class="menu-item">
+                    <i class="ri-chat-3-fill"></i>
+                    <span>Chat Support</span>
+                </a>
+                <a href="profile.html" class="menu-item">
+                    <i class="ri-user-fill"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="counter-status-section">
+                    <div class="counter-status-info">
+                        <span class="status-label">Counter Status:</span>
+                        <span class="status-value" id="counterStatusText">OPEN</span>
+                    </div>
+                    <button class="toggle-counter-btn" id="toggleCounterBtn">
+                        <i class="ri-close-circle-line"></i>
+                        <span>Close Counter</span>
+                    </button>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="ri-logout-box-line"></i>
+                    <span><href="index.html">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Reports & Analytics</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="user-name" id="staffName">Loading...</div>
+                        <div class="user-counter">COUNTER <span id="counterNumber">---</span>- <span class="user-status">ONLINE</span></div>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">--</div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <!-- Date Filter -->
+                <div class="date-filter-section">
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-range="today">Today</button>
+                        <button class="filter-btn" data-range="week">This Week</button>
+                        <button class="filter-btn" data-range="month">This Month</button>
+                        <button class="filter-btn" data-range="custom">Custom Range</button>
+                    </div>
+                    <div class="custom-date-inputs" id="customDateInputs">
+                        <input type="date" class="date-input" id="startDate">
+                        <span>to</span>
+                        <input type="date" class="date-input" id="endDate">
+                        <button class="filter-btn active" id="applyCustomDate">Apply</button>
+                    </div>
+                    <button class="export-btn" id="exportBtn">
+                        <i class="ri-file-pdf-line"></i>
+                        Export PDF
+                    </button>
+                </div>
+
+                <!-- Stats Overview -->
+                <div class="stats-overview">
+                    <div class="stat-card total">
+                        <h3>Total Tickets</h3>
+                        <div class="number" id="totalTickets">0</div>
+                        <div class="subtitle" id="dateRange">Today</div>
+                    </div>
+                    <div class="stat-card completed">
+                        <h3>Completed</h3>
+                        <div class="number" id="completedTickets">0</div>
+                        <div class="subtitle"><span id="completedPercent">0</span>% completion rate</div>
+                    </div>
+                    <div class="stat-card cancelled">
+                        <h3>Cancelled</h3>
+                        <div class="number" id="cancelledTickets">0</div>
+                        <div class="subtitle"><span id="cancelledPercent">0</span>% cancellation rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Transferred</h3>
+                        <div class="number" id="transferredTickets" style="color:#9b59b6">0</div>
+                        <div class="subtitle"><span id="transferredPercent">0</span>% transfer rate</div>
+                    </div>
+                    <div class="stat-card avg">
+                        <h3>Avg Wait Time</h3>
+                        <div class="number"><span id="avgWaitTime">0</span><span style="font-size: 0.5em;">min</span></div>
+                        <div class="subtitle">Per ticket</div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <h3>📈 Hourly Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="hourlyChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Status Breakdown</h3>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Breakdown -->
+                <div class="service-breakdown">
+                    <h3>📋 Service Category Performance</h3>
+                    <div id="serviceBreakdownContent">
+                        <!-- Will be populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Detailed Log -->
+                <div class="detailed-log">
+                    <h3>📝 Detailed Transaction Log</h3>
+                    <table class="log-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Queue No</th>
+                                <th>Student ID</th>
+                                <th>Service</th>
+                                <th>Wait Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody">
+                            <tr>
+                                <td colspan="6" class="no-data">
+                                    <i class="ri-file-list-line"></i>
+                                    <p>Loading data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2mr_mcnjwujkUs0BaIthRKzLbjheeFsU",
+            authDomain: "uptm-smartqueue.firebaseapp.com",
+            databaseURL: "https://uptm-smartqueue-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "uptm-smartqueue",
+            storageBucket: "uptm-smartqueue.firebasestorage.app",
+            messagingSenderId: "750707323311",
+            appId: "1:750707323311:web:d0289dab0557d3864f3f5a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let staffId = null;
+        let staffCounter = null;
+        let currentRange = 'today';
+        let startDate = null;
+        let endDate = null;
+        let allTickets = [];
+        let hourlyChart = null;
+        let statusChart = null;
+
+        // Auth Check
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            staffId = localStorage.getItem('currentStaffId');
+            if (!staffId) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            await loadStaffData();
+            await loadReportData();
+        });
+
+async function loadStaffData() {
+    try {
+        const snapshot = await database.ref(`staff/${staffId}`).once('value');
+        const staffData = snapshot.val();
+            const avatarColor = staffData.avatarColor || 'linear-gradient(135deg,#667eea,#764ba2)';
+    localStorage.setItem('avatarColor', avatarColor);
+    document.getElementById('userAvatar').style.background = avatarColor;
+
+        if (!staffData) {
+            window.location.href = "index.html";
+            return;
+        }
+
+        staffCounter = staffData.counter;
+        document.getElementById('staffName').textContent = staffData.name;
+        document.getElementById('counterNumber').textContent = staffCounter;
+        document.getElementById('userAvatar').textContent = getInitials(staffData.name);
+
+        await loadCounterStatus(); // ✅ letak sini, dalam try
+
+        console.log('✅ Staff loaded:', staffData.name);
+    } catch (error) {
+        console.error('❌ Error loading staff:', error);
+        window.location.href = "index.html";
+        // ❌ buang loadCounterStatus() dari sini
+    }
+}
+        let counterStatus = null;
+
+async function loadCounterStatus() {
+    try {
+        const snapshot = await database.ref(`counters/${staffCounter}`).once('value');
+        const counterData = snapshot.val();
+        counterStatus = counterData?.status || 'open';
+        updateCounterStatusUI(counterStatus);
+
+        database.ref(`counters/${staffCounter}/status`).on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                counterStatus = snapshot.val();
+                updateCounterStatusUI(counterStatus);
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error loading counter status:', error);
+    }
+}
+
+function updateCounterStatusUI(status) {
+    const statusText = document.getElementById('counterStatusText');
+    const toggleBtn = document.getElementById('toggleCounterBtn');
+    if (!statusText || !toggleBtn) return;
+
+    if (status === 'open') {
+        statusText.textContent = 'OPEN';
+        statusText.className = 'status-value open';
+        toggleBtn.className = 'toggle-counter-btn';
+        toggleBtn.innerHTML = '<i class="ri-close-circle-line"></i><span>Close Counter</span>';
+        toggleBtn.disabled = false;
+    } else {
+        statusText.textContent = 'CLOSED';
+        statusText.className = 'status-value closed';
+        toggleBtn.className = 'toggle-counter-btn open-btn';
+        toggleBtn.innerHTML = '<i class="ri-check-circle-line"></i><span>Open Counter</span>';
+        toggleBtn.disabled = false;
+    }
+}
+
+document.getElementById('toggleCounterBtn').addEventListener('click', async () => {
+    const newStatus = counterStatus === 'open' ? 'closed' : 'open';
+    if (!confirm(`Are you sure you want to ${newStatus === 'closed' ? 'close' : 'open'} your counter?`)) return;
+
+    try {
+        await database.ref(`counters/${staffCounter}`).update({
+            status: newStatus,
+            lastUpdated: firebase.database.ServerValue.TIMESTAMP
+        });
+    } catch (error) {
+        alert('Error updating counter status');
+    }
+});
+
+async function loadReportData() {
+    try {
+        allTickets = [];
+
+        // ✅ 1. Completed tickets
+        const completedSnapshot = await database.ref('queue/completed').once('value');
+        const completedData = completedSnapshot.val();
+        if (completedData) {
+            Object.keys(completedData).forEach(key => {
+                allTickets.push({ id: key, ...completedData[key] });
+            });
+        }
+
+        // ✅ 2. Transferred tickets
+        const transferredSnapshot = await database.ref('queue/transferred').once('value');
+        const transferredData = transferredSnapshot.val();
+        if (transferredData) {
+            Object.keys(transferredData).forEach(key => {
+                allTickets.push({ id: key, ...transferredData[key] });
+            });
+        }
+
+        // ✅ 3. Cancelled tickets dari tickets_history
+        const historySnapshot = await database.ref('tickets_history').once('value');
+        const historyData = historySnapshot.val();
+        if (historyData) {
+            Object.keys(historyData).forEach(studentId => {
+                const studentTickets = historyData[studentId];
+                Object.keys(studentTickets).forEach(ticketId => {
+                    const ticket = studentTickets[ticketId];
+                    if (ticket.status === 'cancelled') {
+                        allTickets.push({ id: ticketId, ...ticket });
+                    }
+                });
+            });
+        }
+
+        console.log('✅ Loaded tickets:', allTickets.length);
+        filterAndDisplayData();
+
+    } catch (error) {
+        console.error('❌ Error loading report data:', error);
+    }
+}
+
+        function filterAndDisplayData() {
+            const now = new Date();
+            let start, end;
+
+            if (currentRange === 'today') {
+                start = new Date(now.setHours(0, 0, 0, 0));
+                end = new Date(now.setHours(23, 59, 59, 999));
+                document.getElementById('dateRange').textContent = 'Today';
+            } else if (currentRange === 'week') {
+                const day = now.getDay();
+                const diff = now.getDate() - day;
+                start = new Date(now.setDate(diff));
+                start.setHours(0, 0, 0, 0);
+                end = new Date();
+                document.getElementById('dateRange').textContent = 'This Week';
+            } else if (currentRange === 'month') {
+                start = new Date(now.getFullYear(), now.getMonth(), 1);
+                end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                document.getElementById('dateRange').textContent = 'This Month';
+            } else if (currentRange === 'custom' && startDate && endDate) {
+                start = new Date(startDate);
+                start.setHours(0, 0, 0, 0);
+                end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                document.getElementById('dateRange').textContent = `${startDate} to ${endDate}`;
+            }
+
+            const filteredTickets = allTickets.filter(ticket => {
+                const ticketDate = new Date(ticket.completedAt || ticket.cancelledTimestamp || ticket.createdAt);
+                return ticketDate >= start && ticketDate <= end;
+            });
+
+            updateStatistics(filteredTickets);
+            updateCharts(filteredTickets);
+            updateServiceBreakdown(filteredTickets);
+            updateDetailedLog(filteredTickets);
+        }
+
+function updateStatistics(tickets) {
+    const total = tickets.length;
+    const completed = tickets.filter(t => t.status === 'completed').length;
+    const cancelled = tickets.filter(t => t.status === 'cancelled').length;
+    const transferred = tickets.filter(t => t.status === 'transferred').length; // ✅ TAMBAH NI
+
+    document.getElementById('totalTickets').textContent = total;
+    document.getElementById('completedTickets').textContent = completed;
+    document.getElementById('cancelledTickets').textContent = cancelled;
+
+    const completedPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const cancelledPercent = total > 0 ? Math.round((cancelled / total) * 100) : 0;
+
+    document.getElementById('completedPercent').textContent = completedPercent;
+    document.getElementById('cancelledPercent').textContent = cancelledPercent;
+    document.getElementById('transferredTickets').textContent = transferred;
+    document.getElementById('transferredPercent').textContent = 
+        total > 0 ? Math.round((transferred / total) * 100) : 0;
+
+    const waitTimes = tickets
+        .filter(t => t.createdAt && (t.completedAt || t.calledAt))
+        .map(t => Math.floor(((t.completedAt || t.calledAt) - t.createdAt) / 60000));
+
+    const avgWait = waitTimes.length > 0
+        ? Math.round(waitTimes.reduce((a, b) => a + b, 0) / waitTimes.length)
+        : 0;
+
+    document.getElementById('avgWaitTime').textContent = avgWait;
+}
+
+        function updateCharts(tickets) {
+            const hourlyData = new Array(24).fill(0);
+            tickets.forEach(ticket => {
+                const date = new Date(ticket.completedAt || ticket.cancelledTimestamp || ticket.createdAt);
+                const hour = date.getHours();
+                hourlyData[hour]++;
+            });
+
+            if (hourlyChart) hourlyChart.destroy();
+
+            const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+            hourlyChart = new Chart(hourlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    datasets: [{
+                        label: 'Tickets',
+                        data: hourlyData,
+                        backgroundColor: 'rgba(65, 105, 255, 0.5)',
+                        borderColor: 'rgba(65, 105, 255, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+
+    const completed = tickets.filter(t => t.status === 'completed').length;
+    const cancelled = tickets.filter(t => t.status === 'cancelled').length;
+    const transferred = tickets.filter(t => t.status === 'transferred').length;
+
+    if (statusChart) statusChart.destroy();
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'Cancelled', 'Transferred'],
+            datasets: [{
+                data: [completed, cancelled, transferred],
+                backgroundColor: [
+                    'rgba(39, 174, 96, 0.8)',
+                    'rgba(231, 76, 60, 0.8)',
+                    'rgba(155, 89, 182, 0.8)' 
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+        function updateServiceBreakdown(tickets) {
+            const services = {
+                'Student Account': { icon: 'ri-user-fill', class: 'account', completed: 0, cancelled: 0, transferred: 0 },
+                'Collection': { icon: 'ri-wallet-fill', class: 'collection', completed: 0, cancelled: 0, transferred: 0 },
+                'Scholarship Inquiry': { icon: 'ri-medal-fill', class: 'scholarship', completed: 0, cancelled: 0, transferred: 0 }
+            };
+
+            tickets.forEach(ticket => {
+                const service = ticket.serviceCategory || ticket.serviceName;
+                if (services[service]) {
+                    if (ticket.status === 'completed') {
+                        services[service].completed++;
+                    } else if (ticket.status === 'cancelled') {
+                        services[service].cancelled++;
+                    } else if (ticket.status === 'transferred') {
+                        services[service].transferred++;
+                    }
+
+                }
+            });
+
+            const html = Object.keys(services).map(serviceName => {
+                const service = services[serviceName];
+                const total = service.completed + service.cancelled;
+
+                return `
+                    <div class="service-item">
+                        <div class="service-info">
+                            <div class="service-icon ${service.class}">
+                                <i class="${service.icon}"></i>
+                            </div>
+                            <div class="service-details">
+                                <h4>${serviceName}</h4>
+                                <p>${total} total transactions</p>
+                            </div>
+                        </div>
+                        <div class="service-stats">
+                            <div class="total">${total}</div>
+                            <div class="breakdown">
+                                <span class="completed">${service.completed} completed</span>  
+                                <span class="cancelled">${service.cancelled} cancelled</span>
+                                <span style="color:#9b59b6">${service.transferred} transferred</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('serviceBreakdownContent').innerHTML = html || '<div class="no-data"><p>No data available</p></div>';
+        }
+
+ function updateDetailedLog(tickets) {
+    const tbody = document.getElementById('logTableBody');
+
+    if (tickets.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="no-data">
+                    <i class="ri-inbox-line"></i>
+                    <p>No tickets found for this period</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tickets.sort((a, b) => {
+        const timeA = b.completedAt || b.cancelledTimestamp || b.transfer_timestamp || b.createdAt;
+        const timeB = a.completedAt || a.cancelledTimestamp || a.transfer_timestamp || a.createdAt;
+        return timeA - timeB;
+    });
+
+    tbody.innerHTML = tickets.map(ticket => {
+        const time = new Date(ticket.completedAt || ticket.cancelledTimestamp || ticket.transfer_timestamp || ticket.createdAt);
+        const timeStr = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+        const waitTime = ticket.createdAt && (ticket.completedAt || ticket.calledAt)
+            ? Math.floor(((ticket.completedAt || ticket.calledAt) - ticket.createdAt) / 60000)
+            : 0;
+
+        // ✅ Transfer info - tunjuk destination dan reason
+        const transferInfo = ticket.status === 'transferred' && ticket.transferredTo
+            ? `<br><small style="color:#9b59b6;font-size:0.8em">
+                → ${ticket.transferredTo}
+                ${ticket.transfer_reason ? `| "${ticket.transfer_reason}"` : ''}
+               </small>`
+            : '';
+
+        return `
+            <tr>
+                <td>${timeStr}</td>
+                <td>${ticket.queueNumber || 'N/A'}</td>
+                <td>${ticket.studentId}</td>
+                <td>
+                    ${ticket.serviceCategory || ticket.serviceName || 'N/A'}
+                    ${transferInfo}
+                </td>
+                <td>${waitTime} min</td>
+                <td><span class="status-badge ${ticket.status}">${ticket.status}</span></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+        function getInitials(name) {
+            if (!name) return '--';
+            const parts = name.split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+// Export to PDF
+document.getElementById('exportBtn').addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Get filtered tickets based on current date range
+    const now = new Date();
+    let start, end;
+
+    if (currentRange === 'today') {
+        start = new Date(now.setHours(0, 0, 0, 0));
+        end = new Date(now.setHours(23, 59, 59, 999));
+    } else if (currentRange === 'week') {
+        const day = now.getDay();
+        const diff = now.getDate() - day;
+        start = new Date(now.setDate(diff));
+        start.setHours(0, 0, 0, 0);
+        end = new Date();
+    } else if (currentRange === 'month') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    } else if (currentRange === 'custom' && startDate && endDate) {
+        start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+    }
+
+    const filteredTickets = allTickets.filter(ticket => {
+        const ticketDate = new Date(ticket.completedAt || ticket.cancelledTimestamp || ticket.createdAt);
+        return ticketDate >= start && ticketDate <= end;
+    });
+
+    // Calculate statistics
+    const total = filteredTickets.length;
+    const completed = filteredTickets.filter(t => t.status === 'completed').length;
+    const cancelled = filteredTickets.filter(t => t.status === 'cancelled').length;
+    const completedPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const cancelledPercent = total > 0 ? Math.round((cancelled / total) * 100) : 0;
+
+    // Calculate avg wait time
+    const waitTimes = filteredTickets
+        .filter(t => t.createdAt && (t.completedAt || t.calledAt))
+        .map(t => {
+            const end = t.completedAt || t.calledAt;
+            return Math.floor((end - t.createdAt) / 60000);
+        });
+    const avgWait = waitTimes.length > 0 
+        ? Math.round(waitTimes.reduce((a, b) => a + b, 0) / waitTimes.length)
+        : 0;
+
+    // Service breakdown
+    const services = {
+        'Student Account': { completed: 0, cancelled: 0 },
+        'Collection': { completed: 0, cancelled: 0 },
+        'Scholarship Inquiry': { completed: 0, cancelled: 0 }
+    };
+
+    filteredTickets.forEach(ticket => {
+        const service = ticket.serviceCategory || ticket.serviceName;
+        if (services[service]) {
+            if (ticket.status === 'completed') {
+                services[service].completed++;
+            } else if (ticket.status === 'cancelled') {
+                services[service].cancelled++;
+            }
+        }
+    });
+
+    // PDF Header
+    doc.setFontSize(20);
+    doc.setTextColor(26, 35, 50);
+    doc.text('UPTM Queue Management System', 14, 20);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(102, 102, 102);
+    doc.text('Reports & Analytics', 14, 28);
+
+    // Date Range
+    doc.setFontSize(10);
+    doc.setTextColor(102, 102, 102);
+    const dateRangeText = document.getElementById('dateRange').textContent;
+    doc.text(`Period: ${dateRangeText}`, 14, 35);
+    
+    const generatedDate = new Date().toLocaleString();
+    doc.text(`Generated: ${generatedDate}`, 14, 40);
+
+    // Line separator
+    doc.setDrawColor(224, 224, 224);
+    doc.line(14, 44, 196, 44);
+
+    // Summary Statistics
+    doc.setFontSize(12);
+    doc.setTextColor(26, 35, 50);
+    doc.text('Summary Statistics', 14, 52);
+
+    doc.setFontSize(10);
+    doc.setTextColor(102, 102, 102);
+    
+    const statsY = 60;
+    doc.text(`Total Tickets: ${total}`, 14, statsY);
+    doc.text(`Completed: ${completed} (${completedPercent}%)`, 14, statsY + 6);
+    doc.text(`Cancelled: ${cancelled} (${cancelledPercent}%)`, 14, statsY + 12);
+    doc.text(`Average Wait Time: ${avgWait} minutes`, 14, statsY + 18);
+
+    // Service Breakdown
+    doc.setFontSize(12);
+    doc.setTextColor(26, 35, 50);
+    doc.text('Service Category Breakdown', 14, statsY + 30);
+
+    let serviceY = statsY + 38;
+    doc.setFontSize(10);
+    doc.setTextColor(102, 102, 102);
+
+    Object.keys(services).forEach(serviceName => {
+        const service = services[serviceName];
+        const serviceTotal = service.completed + service.cancelled;
+        doc.text(`${serviceName}: ${serviceTotal} tickets (${service.completed} completed, ${service.cancelled} cancelled)`, 14, serviceY);
+        serviceY += 6;
+    });
+
+    // Detailed Transaction Table
+    doc.setFontSize(12);
+    doc.setTextColor(26, 35, 50);
+    doc.text('Detailed Transactions', 14, serviceY + 8);
+
+    // Prepare table data
+    const tableData = filteredTickets
+        .sort((a, b) => {
+            const timeA = b.completedAt || b.cancelledTimestamp || b.createdAt;
+            const timeB = a.completedAt || a.cancelledTimestamp || a.createdAt;
+            return timeA - timeB;
+        })
+        .map(ticket => {
+            const time = new Date(ticket.completedAt || ticket.cancelledTimestamp || ticket.createdAt);
+            const timeStr = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            
+            const waitTime = ticket.createdAt && (ticket.completedAt || ticket.calledAt)
+                ? Math.floor(((ticket.completedAt || ticket.calledAt) - ticket.createdAt) / 60000)
+                : 0;
+
+            return [
+                timeStr,
+                ticket.queueNumber || 'N/A',
+                ticket.studentId,
+                ticket.serviceCategory || ticket.serviceName || 'N/A',
+                `${waitTime} min`,
+                ticket.status
+            ];
+        });
+
+    doc.autoTable({
+        head: [['Time', 'Queue No', 'Student ID', 'Service', 'Wait Time', 'Status']],
+        body: tableData,
+        startY: serviceY + 12,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [65, 105, 255],
+            textColor: 255,
+            fontSize: 9,
+            fontStyle: 'bold'
+        },
+        bodyStyles: {
+            fontSize: 8,
+            textColor: [51, 51, 51]
+        },
+        alternateRowStyles: {
+            fillColor: [248, 249, 250]
+        },
+        margin: { top: 10, left: 14, right: 14 },
+        didParseCell: function(data) {
+            // Color code status column
+            if (data.column.index === 5 && data.section === 'body') {
+                const status = data.cell.raw;
+                if (status === 'completed') {
+                    data.cell.styles.textColor = [39, 174, 96];
+                    data.cell.styles.fontStyle = 'bold';
+                } else if (status === 'cancelled') {
+                    data.cell.styles.textColor = [231, 76, 60];
+                    data.cell.styles.fontStyle = 'bold';
+                } else if (status === 'transferred') {
+                    data.cell.styles.textColor = [155, 89, 182];
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
+        }
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(153, 153, 153);
+        doc.text(
+            `Page ${i} of ${pageCount}`,
+            doc.internal.pageSize.getWidth() / 2,
+            doc.internal.pageSize.getHeight() - 10,
+            { align: 'center' }
+        );
+        doc.text(
+            'UPTM Bursary Queue Management System',
+            14,
+            doc.internal.pageSize.getHeight() - 10
+        );
+    }
+
+    // Save PDF
+    const fileName = `UPTM_Queue_Report_${currentRange}_${Date.now()}.pdf`;
+    doc.save(fileName);
+
+    console.log('✅ PDF exported:', fileName);
+});
+
+        document.querySelectorAll('.filter-btn[data-range]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn[data-range]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                currentRange = btn.dataset.range;
+
+                if (currentRange === 'custom') {
+                    document.getElementById('customDateInputs').classList.add('show');
+                } else {
+                    document.getElementById('customDateInputs').classList.remove('show');
+                    filterAndDisplayData();
+                }
+            });
+        });
+
+        document.getElementById('applyCustomDate').addEventListener('click', () => {
+            startDate = document.getElementById('startDate').value;
+            endDate = document.getElementById('endDate').value;
+
+            if (startDate && endDate) {
+                filterAndDisplayData();
+            } else {
+                alert('Please select both start and end dates');
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to logout?')) return;
+
+            try {
+                if (staffId) {
+                    await database.ref(`staff/${staffId}`).update({
+                        status: 'offline',
+                        lastLogout: firebase.database.ServerValue.TIMESTAMP
+                    });
+                }
+
+                localStorage.clear();
+                await auth.signOut();
+                window.location.href = "index.html";
+            } catch (error) {
+                console.error('❌ Logout error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

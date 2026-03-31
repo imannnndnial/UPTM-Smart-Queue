@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Queue - UPTM Queue System</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="manage_queue.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="ri-graduation-cap-fill"></i>
+                <div class="sidebar-logo-text">
+                    <h3>UPTM</h3>
+                    <p>BURSARY SYSTEM</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item">
+                <i class="ri-dashboard-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="manage_queue.html" class="menu-item active">
+                <i class="ri-list-check"></i>
+                <span>Manage Queue</span>
+            </a>
+            <a href="report.html" class="menu-item">
+                <i class="ri-file-chart-fill"></i>
+                <span>Reports</span>
+            </a>
+            <a href="announcement.html" class="menu-item">
+                <i class="ri-megaphone-fill"></i>
+                <span>Announcement</span>
+            </a>
+            <a href="chat_support.html" class="menu-item">
+                <i class="ri-chat-3-fill"></i>
+                <span>Chat Support</span>
+            </a>
+            <a href="profile.html" class="menu-item">
+                <i class="ri-user-fill"></i>
+                <span>Profile</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="counter-status-section">
+                <div class="counter-status-info">
+                    <span class="status-label">Counter Status:</span>
+                    <span class="status-value" id="counterStatusText">OPEN</span>
+                </div>
+                <button class="toggle-counter-btn" id="toggleCounterBtn">
+                    <i class="ri-close-circle-line"></i>
+                    <span>Close Counter</span>
+                </button>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="ri-logout-box-line"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title"><h1>Manage Queue</h1></div>
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="staffName">Loading...</div>
+                    <div class="user-counter">COUNTER <span id="counterNumber">---</span> - <span class="user-status">ONLINE</span></div>
+                </div>
+                <div class="user-avatar" id="userAvatar">--</div>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <!-- Stats -->
+            <div class="stats-summary">
+                <div class="stat-box counter-1">
+                    <h4>Counter 1 - Student Account</h4>
+                    <div class="number" id="counter1Count">0</div>
+                </div>
+                <div class="stat-box counter-2">
+                    <h4>Counter 2 - Collection</h4>
+                    <div class="number" id="counter2Count">0</div>
+                </div>
+                <div class="stat-box counter-3">
+                    <h4>Counter 3 - Scholarship</h4>
+                    <div class="number" id="counter3Count">0</div>
+                </div>
+                <div class="stat-box">
+                    <h4>Total Waiting</h4>
+                    <div class="number" id="totalCount">0</div>
+                </div>
+            </div>
+
+            <!-- Filter -->
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label>Filter by Counter</label>
+                    <select class="filter-select" id="filterCounter">
+                        <option value="all">All Counters</option>
+                        <option value="1">Counter 1 - Student Account</option>
+                        <option value="2">Counter 2 - Collection</option>
+                        <option value="3">Counter 3 - Scholarship</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by student ID or name...">
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="queue-table-section">
+                <div class="queue-table-header">
+                    <h3>All Queues</h3>
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span>LIVE UPDATES</span>
+                    </div>
+                </div>
+
+                <table class="queue-table">
+                    <thead>
+                        <tr>
+                            <th>Queue No</th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Service</th>
+                            <th>Counter</th>
+                            <th>Waiting Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="queueTableBody">
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <i class="ri-time-line"></i>
+                                <h3>Loading queue data...</h3>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ===== TRANSFER MODAL ===== -->
+<div class="modal-overlay" id="transferModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-header-icon">
+                <i class="ri-swap-line"></i>
+            </div>
+            <div>
+                <h3>Transfer Student</h3>
+                <p>Move student to a different service queue</p>
+            </div>
+        </div>
+
+        <!-- Current Student Info -->
+        <div class="modal-info-box">
+            <div class="modal-info-item">
+                <label>Queue No</label>
+                <span id="transferQueueNo">---</span>
+            </div>
+            <div class="modal-info-item">
+                <label>Student ID</label>
+                <span id="transferStudentId">---</span>
+            </div>
+            <div class="modal-info-item">
+                <label>Current Service</label>
+                <span id="transferCurrentService">---</span>
+            </div>
+        </div>
+
+        <!-- New Service -->
+        <div class="modal-form-group">
+            <label>Transfer To</label>
+            <select id="transferToService">
+                <option value="">-- Select new service --</option>
+                <option value="student_account" data-counter="1" data-prefix="A" data-name="Student Account">Counter 1 - Student Account</option>
+                <option value="collection" data-counter="2" data-prefix="C" data-name="Collection">Counter 2 - Collection</option>
+                <option value="scholarship" data-counter="3" data-prefix="S" data-name="Scholarship Inquiry">Counter 3 - Scholarship Inquiry</option>
+            </select>
+        </div>
+
+        <!-- Reason -->
+        <div class="modal-form-group">
+            <label>Transfer Reason <span style="color:#e74c3c">*</span></label>
+            <textarea id="transferReason" placeholder="e.g. Student needs scholarship info after account inquiry..."></textarea>
+        </div>
+
+        <!-- Warning -->
+        <div class="modal-warning">
+            <i class="ri-alert-line"></i>
+            <span>Student will join the <strong>front</strong> of the new queue. Current ticket will be marked as <strong>Transferred</strong>.</span>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeTransferModal()">Cancel</button>
+            <button class="btn-transfer-confirm" id="confirmTransferBtn" onclick="confirmTransfer()">
+                <i class="ri-swap-line"></i>
+                Confirm Transfer
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SKIP MODAL ===== -->
+<div class="modal-overlay" id="skipModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-header-icon" style="background:rgba(231,76,60,0.1); color:#e74c3c;">
+                <i class="ri-skip-forward-line"></i>
+            </div>
+            <div>
+                <h3>Skip Student</h3>
+                <p>Student will be removed from the queue</p>
+            </div>
+        </div>
+
+        <div class="modal-info-box">
+            <div class="modal-info-item">
+                <label>Queue No</label>
+                <span id="skipQueueNo">---</span>
+            </div>
+            <div class="modal-info-item">
+                <label>Student ID</label>
+                <span id="skipStudentId">---</span>
+            </div>
+        </div>
+
+        <div class="modal-warning" style="background:rgba(231,76,60,0.08); border-color:rgba(231,76,60,0.3); color:#c0392b;">
+            <i class="ri-alert-line"></i>
+            <span>This student will be <strong>removed</strong> from the queue and ticket will be marked as <strong>Cancelled</strong>. This action cannot be undone.</span>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeSkipModal()">Cancel</button>
+            <button class="btn-transfer-confirm" id="confirmSkipBtn" onclick="confirmSkip()"
+                style="background:#e74c3c;">
+                <i class="ri-skip-forward-line"></i>
+                Confirm Skip
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyC2mr_mcnjwujkUs0BaIthRKzLbjheeFsU",
+        authDomain: "uptm-smartqueue.firebaseapp.com",
+        databaseURL: "https://uptm-smartqueue-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "uptm-smartqueue",
+        storageBucket: "uptm-smartqueue.firebasestorage.app",
+        messagingSenderId: "750707323311",
+        appId: "1:750707323311:web:d0289dab0557d3864f3f5a"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+
+    let staffCounter = null;
+    let staffCounterNumber = null;
+    let staffId = null;
+    let staffName = null;
+    let allQueues = [];
+    let filteredQueues = [];
+    let counterStatus = null;
+ 
+    // Transfer state
+    let transferQueueData = null;
+    let transferQueueId = null;
+
+    // ===== SKIP FUNCTIONS =====
+let skipQueueId = null;
+let skipQueueNumber = null;
+let skipStudentId = null;
+
+function openSkipModal(queueId, queueNumber, studentId) {
+    skipQueueId = queueId;
+    skipQueueNumber = queueNumber;
+    skipStudentId = studentId;
+
+    document.getElementById('skipQueueNo').textContent = queueNumber;
+    document.getElementById('skipStudentId').textContent = studentId;
+    document.getElementById('skipModal').classList.add('show');
+}
+
+function closeSkipModal() {
+    document.getElementById('skipModal').classList.remove('show');
+    skipQueueId = null;
+    skipQueueNumber = null;
+    skipStudentId = null;
+}
+
+async function confirmSkip() {
+    if (!skipQueueId) return;
+
+    const btn = document.getElementById('confirmSkipBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ri-loader-4-line"></i> Skipping...';
+
+    try {
+        const snapshot = await database.ref(`queue/active/${skipQueueId}`).once('value');
+        const queueData = snapshot.val();
+
+        if (queueData) {
+            await database.ref(`tickets_history/${queueData.studentId}/${skipQueueId}`).set({
+                ...queueData,
+                status: 'cancelled',
+                cancelledTimestamp: Date.now(),
+                completedTimestamp: Date.now(),
+                waitTimeMinutes: Math.floor((Date.now() - queueData.createdAt) / 60000),
+                cancelledBy: 'staff',
+                cancelReason: 'no_show'
+            });
+
+            // ✅ TAMBAH NI — kalau dia tengah serving, clear counter
+            if (queueData.status === 'serving' && queueData.counter) {
+                await database.ref(`counters/${queueData.counter}`).update({
+                    currentServing: null,
+                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+        }
+
+        await database.ref(`queue/active/${skipQueueId}`).remove();
+        closeSkipModal();
+        console.log('✅ Student no-show skipped:', skipQueueNumber);
+
+    } catch (error) {
+        console.error('❌ Error skipping student:', error);
+        alert('Error skipping student: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-skip-forward-line"></i> Confirm Skip';
+    }
+}
+    // ===== AUTH =====
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) { window.location.href = "index.html"; return; }
+
+        staffId = localStorage.getItem('currentStaffId');
+        if (!staffId) { window.location.href = "index.html"; return; }
+
+        await loadStaffData();
+        await loadCounterStatus();
+        setupRealtimeQueueListener();
+    });
+
+    async function loadStaffData() {
+        try {
+            const snapshot = await database.ref(`staff/${staffId}`).once('value');
+            const staffData = snapshot.val();
+                const avatarColor = staffData.avatarColor || 'linear-gradient(135deg,#667eea,#764ba2)';
+    localStorage.setItem('avatarColor', avatarColor);
+    document.getElementById('userAvatar').style.background = avatarColor;
+    
+            if (!staffData) { window.location.href = "index.html"; return; }
+
+            staffCounter = staffData.counter;
+            staffCounterNumber = parseInt(staffCounter.replace('B0', ''));
+            staffName = staffData.name;
+
+            document.getElementById('staffName').textContent = staffData.name;
+            document.getElementById('counterNumber').textContent = staffCounter;
+            document.getElementById('userAvatar').textContent = getInitials(staffData.name);
+        } catch (error) {
+            console.error('❌ Error loading staff:', error);
+            window.location.href = "index.html";
+        }
+    }
+
+    function setupRealtimeQueueListener() {
+        database.ref('queue/active').on('value', (snapshot) => {
+            const queueData = snapshot.val();
+
+            if (!queueData) {
+                allQueues = [];
+                updateQueueDisplay();
+                updateStats();
+                return;
+            }
+
+            allQueues = Object.keys(queueData).map(key => ({ id: key, ...queueData[key] }));
+            allQueues.sort((a, b) => a.createdAt - b.createdAt);
+
+            updateQueueDisplay();
+            updateStats();
+        });
+    }
+
+    setInterval(() => {
+        document.querySelectorAll('.wait-time-cell').forEach(cell => {
+            const ts = parseInt(cell.getAttribute('data-timestamp'));
+            if (ts) cell.textContent = calculateWaitTime(ts);
+        });
+    }, 1000);
+
+    function updateStats() {
+        let c1 = 0, c2 = 0, c3 = 0, total = 0;
+        allQueues.forEach(q => {
+            if (q.status === 'waiting') {
+                total++;
+                if (q.counterNumber === 1) c1++;
+                if (q.counterNumber === 2) c2++;
+                if (q.counterNumber === 3) c3++;
+            }
+        });
+        document.getElementById('counter1Count').textContent = c1;
+        document.getElementById('counter2Count').textContent = c2;
+        document.getElementById('counter3Count').textContent = c3;
+        document.getElementById('totalCount').textContent = total;
+    }
+
+    function updateQueueDisplay() {
+        const filterCounter = document.getElementById('filterCounter').value;
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+        filteredQueues = allQueues.filter(queue => {
+            if (filterCounter !== 'all' && queue.counterNumber !== parseInt(filterCounter)) return false;
+            if (searchTerm) {
+                const matchId = queue.studentId.toLowerCase().includes(searchTerm);
+                const matchName = (queue.studentName || '').toLowerCase().includes(searchTerm);
+                if (!matchId && !matchName) return false;
+            }
+            return true;
+        });
+
+        renderQueueTable();
+    }
+
+    function renderQueueTable() {
+        const tbody = document.getElementById('queueTableBody');
+
+        if (filteredQueues.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        <i class="ri-inbox-line"></i>
+                        <h3>No queues found</h3>
+                        <p>Try adjusting your filters</p>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filteredQueues.map(queue => {
+            const canAct = queue.counterNumber === staffCounterNumber;
+            let actionButtons = '';
+
+            if (canAct) {
+                if (queue.status === 'waiting') {
+                    actionButtons = `
+                        <button class="action-btn call" onclick="callStudent('${queue.id}', '${queue.queueNumber}')">
+                            <i class="ri-phone-fill"></i> Call
+                        </button>
+                        <button class="action-btn remove" onclick="openSkipModal('${queue.id}', '${queue.queueNumber}', '${queue.studentId}')">
+                            <i class="ri-skip-forward-line"></i> Skip
+                        </button>`;
+} else if (queue.status === 'serving') {
+    actionButtons = `
+        <button class="action-btn complete" onclick="completeService('${queue.id}', '${queue.queueNumber}')">
+            <i class="ri-check-line"></i> Complete
+        </button>
+        <button class="action-btn transfer" onclick="openTransferModal('${queue.id}')">
+            <i class="ri-swap-line"></i> Transfer
+        </button>
+        <button class="action-btn remove" onclick="openSkipModal('${queue.id}', '${queue.queueNumber}', '${queue.studentId}')">
+            <i class="ri-user-unfollow-line"></i> No Show
+        </button>`;
+}
+            } else {
+                actionButtons = `<button class="action-btn disabled" disabled>🔒 Counter ${queue.counterNumber}</button>`;
+            }
+
+            return `
+                <tr>
+                    <td><span class="queue-number counter-${queue.counterNumber}">${queue.queueNumber}</span></td>
+                    <td>${queue.studentId}</td>
+                    <td>${queue.studentName || '-'}</td>
+                    <td>${queue.serviceCategory}</td>
+                    <td><span class="counter-badge counter-${queue.counterNumber}">Counter ${queue.counterNumber}</span></td>
+                    <td class="wait-time-cell" data-timestamp="${queue.createdAt}">${calculateWaitTime(queue.createdAt)}</td>
+                    <td><span class="status-badge ${queue.status}">${queue.status.toUpperCase()}</span></td>
+                    <td><div class="action-buttons">${actionButtons}</div></td>
+                </tr>`;
+        }).join('');
+    }
+
+    // ===== TRANSFER FUNCTIONS =====
+
+    function openTransferModal(queueId) {
+        // Find queue data
+        const queue = allQueues.find(q => q.id === queueId);
+        if (!queue) return;
+
+        transferQueueId = queueId;
+        transferQueueData = { ...queue }; 
+
+        // Populate modal info
+        document.getElementById('transferQueueNo').textContent = queue.queueNumber;
+        document.getElementById('transferStudentId').textContent = queue.studentId;
+        document.getElementById('transferCurrentService').textContent = queue.serviceCategory;
+
+        // Reset form
+        document.getElementById('transferToService').value = '';
+        document.getElementById('transferReason').value = '';
+
+        // Remove current service from dropdown options
+        const select = document.getElementById('transferToService');
+        Array.from(select.options).forEach(opt => {
+            opt.disabled = opt.dataset.name === queue.serviceCategory ||
+                           opt.dataset.counter == queue.counterNumber;
+        });
+
+        document.getElementById('transferModal').classList.add('show');
+    }
+
+    function closeTransferModal() {
+        document.getElementById('transferModal').classList.remove('show');
+        transferQueueId = null;
+        transferQueueData = null;
+    }
+
+async function confirmTransfer() {
+    if (!transferQueueData && transferQueueId) {
+        transferQueueData = allQueues.find(q => q.id === transferQueueId);
+    }
+
+    if (!transferQueueData) {
+        alert('Error: Queue data not found. Please try again.');
+        closeTransferModal();
+        return;
+    }
+
+        const select = document.getElementById('transferToService');
+        const reason = document.getElementById('transferReason').value.trim();
+
+        const selectedOption = select.options[select.selectedIndex];
+        const newServiceKey = select.value;
+        const newCounterNumber = parseInt(selectedOption.dataset.counter);
+        const newPrefix = selectedOption.dataset.prefix;
+        const newServiceName = selectedOption.dataset.name;
+
+        // ✅ VALIDATION
+        if (!newServiceKey) {
+            alert('Please select a service to transfer to!');
+            return;
+        }
+
+        if (!reason) {
+            alert('Please enter a transfer reason!');
+            return;
+        }
+
+        const btn = document.getElementById('confirmTransferBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ri-loader-4-line"></i> Transferring...';
+
+        try {
+            const now = Date.now();
+
+            // ✅ STEP 1: Get next queue number for new service
+            const queuesSnapshot = await database.ref(`queues/${newServiceKey}`).once('value');
+            const nextNumber = queuesSnapshot.child('nextTicketNumber').val() || 1;
+            const formattedNumber = String(nextNumber).padStart(3, '0');
+            const newQueueNumber = `${newPrefix}-${formattedNumber}`;
+
+            // ✅ STEP 2: Update OLD queue record → status = "transferred"
+            await database.ref(`queue/active/${transferQueueId}`).update({
+                status: 'transferred',
+                transferredAt: firebase.database.ServerValue.TIMESTAMP,
+                transferredTo: newServiceName,
+                transferredToCounter: newCounterNumber,
+                transfer_reason: reason,
+                transfer_timestamp: now,
+                transferredBy: staffId,
+                transferredByName: staffName
+            });
+
+            // ✅ STEP 3: Move old record to completed/transferred log
+            const oldSnapshot = await database.ref(`queue/active/${transferQueueId}`).once('value');
+            const oldData = oldSnapshot.val();
+
+            await database.ref(`queue/transferred/${transferQueueId}`).set({
+                ...oldData,
+                status: 'transferred',
+                transfer_reason: reason,
+                transfer_timestamp: now
+            });
+
+            // Log in tickets_history
+            await database.ref(`tickets_history/${transferQueueData.studentId}/${transferQueueId}`).set({
+                ...transferQueueData,
+                status: 'transferred',
+                transferredTo: newServiceName,
+                transfer_reason: reason,
+                completedTimestamp: now,
+                waitTimeMinutes: Math.floor((now - transferQueueData.createdAt) / 60000)
+            });
+
+            // ✅ STEP 4: Remove old from active queue
+            await database.ref(`queue/active/${transferQueueId}`).remove();
+
+            // ✅ STEP 5: Create NEW queue record for new service
+            const newQueueId = database.ref('queue/active').push().key;
+
+            await database.ref(`queue/active/${newQueueId}`).set({
+                queueNumber: newQueueNumber,
+                studentId: transferQueueData.studentId,
+                studentName: transferQueueData.studentName,
+                serviceCategory: newServiceName,
+                serviceType: newServiceKey,
+                status: 'waiting',
+                createdAt: 1,
+                counterNumber: newCounterNumber,
+                ticketNumber: nextNumber,
+                ticketNumberFormatted: formattedNumber,
+                // Transfer metadata
+                isTransferred: true,
+                transferredFrom: transferQueueData.serviceCategory,
+                transferredFromCounter: transferQueueData.counterNumber,
+                transfer_reason: reason,
+                transfer_timestamp: now,
+                originalQueueNumber: transferQueueData.queueNumber
+            });
+
+            // ✅ STEP 6: Increment nextTicketNumber for new service
+            await database.ref(`queues/${newServiceKey}/nextTicketNumber`).set(nextNumber + 1);
+
+            // ✅ STEP 7: Clear counter serving
+            await database.ref(`counters/${staffCounter}`).update({
+                currentServing: null,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            closeTransferModal();
+
+            alert(`✅ Transfer successful!\n\nStudent has been moved to:\n${newServiceName}\nNew Queue No: ${newQueueNumber}\n\nStudent will join end of queue.`);
+
+            console.log(`✅ Transferred ${transferQueueData.queueNumber} → ${newQueueNumber} (${newServiceName})`);
+
+        } catch (error) {
+            console.error('❌ Transfer error:', error);
+            alert('Error transferring student: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ri-swap-line"></i> Confirm Transfer';
+        }
+    }
+
+    // ===== EXISTING FUNCTIONS =====
+
+    async function callStudent(queueId, queueNumber) {
+        if (!confirm(`Call student ${queueNumber}?`)) return;
+        try {
+            await database.ref(`queue/active/${queueId}`).update({
+                status: 'serving',
+                counter: staffCounter,
+                staffId: staffId,
+                calledAt: firebase.database.ServerValue.TIMESTAMP
+            });
+            await database.ref(`counters/${staffCounter}`).update({
+                currentServing: queueNumber,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            });
+        } catch (error) {
+            alert('Error calling student: ' + error.message);
+        }
+    }
+
+    async function getNextTicketNumber(serviceKey) {
+    const today = new Date().toISOString().split('T')[0]; // "2026-02-28"
+    
+    const snapshot = await database.ref(`queues/${serviceKey}`).once('value');
+    const data = snapshot.val() || {};
+    
+    const lastResetDate = data.lastResetDate || '';
+    
+    // ✅ Kalau hari lain atau takde date, reset ke 1
+    const nextNumber = (lastResetDate !== today) ? 1 : (data.nextTicketNumber || 1);
+    
+    // ✅ Simpan balik
+    await database.ref(`queues/${serviceKey}`).update({
+        nextTicketNumber: nextNumber + 1,
+        lastResetDate: today
+    });
+    
+    return nextNumber;
+}
+
+    async function completeService(queueId, queueNumber) {
+        if (!confirm(`Complete service for ${queueNumber}?`)) return;
+        try {
+            const snapshot = await database.ref(`queue/active/${queueId}`).once('value');
+            const queueData = snapshot.val();
+            if (!queueData) throw new Error('Queue data not found');
+
+            await database.ref(`queue/completed/${queueId}`).set({
+                ...queueData,
+                status: 'completed',
+                completedAt: firebase.database.ServerValue.TIMESTAMP,
+                completedBy: staffId,
+                completedByName: staffName
+            });
+
+            await database.ref(`tickets_history/${queueData.studentId}/${queueId}`).set({
+                ...queueData,
+                status: 'completed',
+                completedTimestamp: Date.now(),
+                waitTimeMinutes: Math.floor((Date.now() - queueData.createdAt) / 60000)
+            });
+
+            await database.ref(`queue/active/${queueId}`).remove();
+
+            await database.ref(`counters/${staffCounter}`).update({
+                currentServing: null,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            });
+        } catch (error) {
+            alert('Error completing service: ' + error.message);
+        }
+    }
+
+    async function removeStudent(queueId, queueNumber) {
+        if (!confirm(`Remove ${queueNumber} from queue? This cannot be undone.`)) return;
+        try {
+            const snapshot = await database.ref(`queue/active/${queueId}`).once('value');
+            const queueData = snapshot.val();
+            if (queueData) {
+                await database.ref(`tickets_history/${queueData.studentId}/${queueId}`).set({
+                    ...queueData,
+                    status: 'cancelled',
+                    cancelledTimestamp: Date.now(),
+                    completedTimestamp: Date.now(),
+                    waitTimeMinutes: 0,
+                    cancelledBy: 'staff'
+                });
+            }
+            await database.ref(`queue/active/${queueId}`).remove();
+        } catch (error) {
+            alert('Error removing student: ' + error.message);
+        }
+    }
+
+    // ===== COUNTER STATUS =====
+    async function loadCounterStatus() {
+        try {
+            const snapshot = await database.ref(`counters/${staffCounter}`).once('value');
+            const counterData = snapshot.val();
+            counterStatus = (counterData && counterData.status) ? counterData.status : 'open';
+            updateCounterStatusUI(counterStatus);
+
+            database.ref(`counters/${staffCounter}/status`).on('value', (snap) => {
+                if (snap.exists()) {
+                    counterStatus = snap.val();
+                    updateCounterStatusUI(counterStatus);
+                }
+            });
+        } catch (error) {
+            console.error('❌ Error loading counter status:', error);
+        }
+    }
+
+    function updateCounterStatusUI(status) {
+        const statusText = document.getElementById('counterStatusText');
+        const toggleBtn = document.getElementById('toggleCounterBtn');
+        if (!statusText || !toggleBtn) return;
+
+        if (status === 'open') {
+            statusText.textContent = 'OPEN';
+            statusText.className = 'status-value open';
+            toggleBtn.className = 'toggle-counter-btn';
+            toggleBtn.innerHTML = '<i class="ri-close-circle-line"></i><span>Close Counter</span>';
+        } else {
+            statusText.textContent = 'CLOSED';
+            statusText.className = 'status-value closed';
+            toggleBtn.className = 'toggle-counter-btn open-btn';
+            toggleBtn.innerHTML = '<i class="ri-check-circle-line"></i><span>Open Counter</span>';
+        }
+    }
+
+    document.getElementById('toggleCounterBtn').addEventListener('click', async () => {
+        const newStatus = counterStatus === 'open' ? 'closed' : 'open';
+        if (!confirm(`Are you sure you want to ${newStatus === 'closed' ? 'close' : 'open'} your counter?`)) return;
+        await database.ref(`counters/${staffCounter}`).update({
+            status: newStatus,
+            lastUpdated: firebase.database.ServerValue.TIMESTAMP
+        });
+    });
+
+    // ===== FILTERS =====
+    document.getElementById('filterCounter').addEventListener('change', updateQueueDisplay);
+    document.getElementById('searchInput').addEventListener('input', updateQueueDisplay);
+
+    // ===== LOGOUT =====
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to logout?')) return;
+        try {
+            if (staffId) {
+                await database.ref(`staff/${staffId}`).update({
+                    status: 'offline',
+                    lastLogout: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+            if (staffCounter) {
+                await database.ref(`counters/${staffCounter}`).update({
+                    status: 'closed',
+                    currentServing: null,
+                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+            localStorage.clear();
+            await auth.signOut();
+            window.location.href = "index.html";
+        } catch (error) {
+            console.error('❌ Logout error:', error);
+        }
+    });
+
+    // Close modal when click outside
+    document.getElementById('transferModal').addEventListener('click', function(e) {
+        if (e.target === this) closeTransferModal();
+    });
+
+    document.getElementById('skipModal').addEventListener('click', function(e) {
+    if (e.target === this) closeSkipModal();
+});
+
+    // ===== HELPERS =====
+    function calculateWaitTime(timestamp) {
+        if (!timestamp) return '00:00:00';
+        const diffSecs = Math.floor((Date.now() - timestamp) / 1000);
+        const h = Math.floor(diffSecs / 3600);
+        const m = Math.floor((diffSecs % 3600) / 60);
+        const s = diffSecs % 60;
+        return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    function getInitials(name) {
+        if (!name) return '--';
+        const parts = name.split(' ');
+        return parts.length >= 2
+            ? (parts[0][0] + parts[1][0]).toUpperCase()
+            : name.substring(0, 2).toUpperCase();
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - UPTM Queue System</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="ri-graduation-cap-fill"></i>
+                    <div class="sidebar-logo-text">
+                        <h3>UPTM</h3>
+                        <p>BURSARY SYSTEM</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item active">
+                    <i class="ri-dashboard-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="manage_queue.html" class="menu-item">
+                    <i class="ri-list-check"></i>
+                    <span> Manage Queue</span>
+                </a>
+                <a href="report.html" class="menu-item">
+                    <i class="ri-file-chart-fill"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="announcement.html" class="menu-item">
+                    <i class="ri-megaphone-fill"></i>
+                    <span>Announcement</span>
+                </a>
+                <a href="chat_support.html" class="menu-item">
+                    <i class="ri-chat-3-fill"></i>
+                    <span>Chat Support</span>
+                </a>
+                <a href="profile.html" class="menu-item">
+                    <i class="ri-user-fill"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="counter-status-section">
+                    <div class="counter-status-info">
+                        <span class="status-label">Counter Status:</span>
+                        <span class="status-value" id="counterStatusText">OPEN</span>
+                    </div>
+                    <button class="toggle-counter-btn" id="toggleCounterBtn">
+                        <i class="ri-close-circle-line"></i>
+                        <span>Close Counter</span>
+                    </button>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="ri-logout-box-line"></i>
+                    <span><href="index.html">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Staff Dashboard</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="user-name" id="staffName">Loading...</div>
+                        <div class="user-counter">COUNTER <span id="counterNumber">---</span> - <span class="user-status">ONLINE</span></div>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">--</div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Currently Serving</h3>
+                            <div class="stat-number" id="currentServing">---</div>
+                        </div>
+                        <div class="stat-icon blue">
+                            <i class="ri-user-star-fill"></i>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Total in Queue</h3>
+                            <div class="stat-number" id="totalQueue">0</div>
+                        </div>
+                        <div class="stat-icon orange">
+                            <i class="ri-group-fill"></i>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Avg Wait Time</h3>
+                            <div class="stat-number"><span id="avgWaitTime">0</span> <span>min</span></div>
+                        </div>
+                        <div class="stat-icon green">
+                            <i class="ri-time-fill"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="call-next-section">
+                    <div class="queue-status"></div>
+                    <h2>Ready for next student?</h2>
+                    <button class="call-next-btn" id="callNextBtn">
+                        <span>CALL NEXT STUDENT</span>
+                        <i class="ri-arrow-right-line"></i>
+                    </button>
+                    <div class="action-buttons">
+                        <button class="action-btn" id="recallBtn" disabled>Recall (<span id="recallNumber">---</span>)</button>
+                        <button class="action-btn" id="completeBtn" disabled>Complete Service</button>
+                    </div>
+                </div>
+
+                <div class="queue-section">
+                    <div class="queue-header">
+                        <h3>Upcoming in Queue</h3>
+                        <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            <span>LIVE UPDATES</span>
+                        </div>
+                    </div>
+
+                    <table class="queue-table">
+                        <thead>
+                            <tr>
+                                <th>Queue No</th>
+                                <th>Student ID</th>
+                                <th>Service Category</th>
+                                <th>Waiting Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queueTableBody">
+                            <tr>
+                                <td colspan="5" class="loading">Loading queue data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyC2mr_mcnjwujkUs0BaIthRKzLbjheeFsU",
+        authDomain: "uptm-smartqueue.firebaseapp.com",
+        databaseURL: "https://uptm-smartqueue-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "uptm-smartqueue",
+        storageBucket: "uptm-smartqueue.firebasestorage.app",
+        messagingSenderId: "750707323311",
+        appId: "1:750707323311:web:d0289dab0557d3864f3f5a"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+
+    let currentUser = null;
+    let currentServingNumber = null;
+    let staffCounter = null;
+    let staffCounterNumber = null; 
+    let staffId = null;
+    let currentServingQueueId = null;
+    let counterStatus = null; 
+    let isCallingNext = false;
+
+    // 🔥 TRIPLE LAYER AUTHENTICATION CHECK
+    auth.onAuthStateChanged(async (user) => {
+        // ❌ CHECK 1: No Firebase User
+        if (!user) {
+            console.log('❌ No Firebase user detected');
+            await cleanupAndRedirect();
+            return;
+        }
+        
+        // ❌ CHECK 2: No staffId in localStorage
+        staffId = localStorage.getItem('currentStaffId');
+        if (!staffId) {
+            console.log('❌ No staffId in localStorage');
+            await cleanupAndRedirect();
+            return;
+        }
+        
+        // ❌ CHECK 3: Verify staff exists in database
+        try {
+            const staffSnapshot = await database.ref(`staff/${staffId}`).once('value');
+            
+            if (!staffSnapshot.exists()) {
+                console.log('❌ Staff not found in database');
+                await cleanupAndRedirect();
+                return;
+            }
+            
+            const staffData = staffSnapshot.val();
+            
+            // ❌ CHECK 4: Verify email matches
+            if (staffData.email !== user.email) {
+                console.log('❌ Email mismatch');
+                await cleanupAndRedirect();
+                return;
+            }
+            
+            // ✅ ALL CHECKS PASSED - Proceed with dashboard
+            console.log('✅ Authentication successful');
+            currentUser = user;
+            
+            await loadStaffData();
+            await loadCounterStatus();
+            await loadQueueData();
+            setupRealtimeListeners();
+            
+        } catch (error) {
+            console.error('❌ Error during authentication check:', error);
+            await cleanupAndRedirect();
+        }
+    });
+
+    // 🧹 Cleanup function
+    async function cleanupAndRedirect() {
+        try {
+            // Clear localStorage
+            localStorage.removeItem('currentStaffId');
+            localStorage.removeItem('currentCounter');
+            localStorage.removeItem('staffName');
+            localStorage.removeItem('staffEmail');
+            
+            // Sign out from Firebase
+            await auth.signOut();
+        } catch (error) {
+            console.error('Error during cleanup:', error);
+        } finally {
+            // Always redirect
+            window.location.href = "index.html";
+        }
+    }
+
+ async function loadStaffData() {
+    try {
+        const snapshot = await database.ref(`staff/${staffId}`).once('value');
+        const staffData = snapshot.val();
+            const avatarColor = staffData.avatarColor || 'linear-gradient(135deg,#667eea,#764ba2)';
+    localStorage.setItem('avatarColor', avatarColor);
+    document.getElementById('userAvatar').style.background = avatarColor;
+        
+        if (!staffData) {
+            throw new Error('Staff data not found');
+        }
+        
+        staffCounter = staffData.counter;
+        staffCounterNumber = parseInt(staffCounter.replace('B0', ''));
+        
+        document.getElementById('staffName').textContent = staffData.name;
+        document.getElementById('counterNumber').textContent = staffCounter;
+        document.getElementById('userAvatar').textContent = getInitials(staffData.name);
+        
+        // ⬇️ UPDATE COUNTER INFO WITHOUT CHANGING STATUS
+        // Only update staffId, staffName, lastUpdated
+        // DO NOT touch the status field
+        await database.ref(`counters/${staffCounter}`).update({
+            staffId: staffId,
+            staffName: staffData.name,
+            lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            // ⬅️ REMOVED status: 'open' 
+        });
+        
+        console.log('✅ Staff loaded:', staffData.name, 'Counter Number:', staffCounterNumber);
+        
+    } catch (error) {
+        console.error('❌ Error loading staff:', error);
+        alert('Error loading staff data. Please login again.');
+        await cleanupAndRedirect();
+    }
+}
+
+async function loadQueueData() {
+    try {
+        const snapshot = await database.ref('queue/active').once('value');
+        const queueData = snapshot.val();
+        
+        if (queueData) {
+            const queues = Object.keys(queueData).map(key => ({
+                id: key,
+                ...queueData[key]
+            }));
+            
+            // ⬇️ FILTER BY STAFF COUNTER
+            const myCounterQueues = queues.filter(q => q.counterNumber === staffCounterNumber);
+            
+            myCounterQueues.sort((a, b) => a.createdAt - b.createdAt);
+            
+            const serving = myCounterQueues.find(q => q.status === 'serving' && q.counter === staffCounter);
+            if (serving) {
+                currentServingNumber = serving.queueNumber;
+                currentServingQueueId = serving.id;
+                document.getElementById('currentServing').textContent = serving.queueNumber;
+                document.getElementById('recallNumber').textContent = serving.queueNumber;
+                document.getElementById('recallBtn').disabled = false;
+                document.getElementById('completeBtn').disabled = false;
+            }
+            
+            updateQueueTable(myCounterQueues);
+            updateStats(myCounterQueues);
+        } else {
+            document.getElementById('queueTableBody').innerHTML = '<tr><td colspan="5" class="loading">No students in queue</td></tr>';
+        }
+    } catch (error) {
+        console.error('❌ Error loading queue:', error);
+    }
+}
+
+
+ function setupRealtimeListeners() {
+    // ⬇️ LISTEN TO ALL ACTIVE QUEUES
+    database.ref('queue/active').on('value', (snapshot) => {
+        const queueData = snapshot.val();
+        
+        if (queueData) {
+            const queues = Object.keys(queueData).map(key => ({
+                id: key,
+                ...queueData[key]
+            }));
+            
+            // ⬇️ FILTER ONLY STAFF'S COUNTER FOR DISPLAY
+            const myCounterQueues = queues.filter(q => q.counterNumber === staffCounterNumber);
+            
+            myCounterQueues.sort((a, b) => a.createdAt - b.createdAt);
+            
+            updateQueueTable(myCounterQueues);  // ⬅️ ONLY SHOW STAFF'S COUNTER
+            updateStats(myCounterQueues);
+            
+            const serving = myCounterQueues.find(q => q.status === 'serving' && q.counter === staffCounter);
+            if (serving) {
+                currentServingNumber = serving.queueNumber;
+                currentServingQueueId = serving.id;
+                document.getElementById('currentServing').textContent = serving.queueNumber;
+                document.getElementById('recallNumber').textContent = serving.queueNumber;
+                document.getElementById('recallBtn').disabled = false;
+                document.getElementById('completeBtn').disabled = false;
+            } else {
+                if (currentServingNumber) {
+                    currentServingNumber = null;
+                    currentServingQueueId = null;
+                    document.getElementById('currentServing').textContent = '---';
+                    document.getElementById('recallNumber').textContent = '---';
+                    document.getElementById('recallBtn').disabled = true;
+                    document.getElementById('completeBtn').disabled = true;
+                }
+            }
+        } else {
+            document.getElementById('queueTableBody').innerHTML = '<tr><td colspan="5" class="loading">No students in queue</td></tr>';
+            document.getElementById('totalQueue').textContent = '0';
+        }
+    });
+}
+
+setInterval(() => {
+    const waitTimeCells = document.querySelectorAll('.wait-time-cell');
+    waitTimeCells.forEach(cell => {
+        const timestamp = parseInt(cell.getAttribute('data-timestamp'));
+        if (timestamp) {
+            cell.textContent = calculateWaitTime(timestamp);
+        }
+    });
+}, 1000); 
+
+    function updateQueueTable(queues) {
+        const tbody = document.getElementById('queueTableBody');
+        const waitingQueues = queues.filter(q => q.status === 'waiting' || q.status === 'serving');
+        
+        if (waitingQueues.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="loading">No students in queue</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = waitingQueues.map((queue, index) => {
+            const waitTime = calculateWaitTime(queue.createdAt);
+            let statusBadge = '';
+            
+            if (queue.status === 'serving') {
+                statusBadge = '<span class="status-badge serving">SERVING</span>';
+            } else if (index === 0) {
+                statusBadge = '<span class="status-badge next">NEXT</span>';
+            } else {
+                statusBadge = '<span class="status-badge waiting">WAITING</span>';
+            }
+            
+            return `
+                <tr>
+                    <td class="queue-number">${queue.queueNumber}</td>
+                    <td>${queue.studentId}</td>
+                    <td>${queue.serviceCategory}</td>
+                    <td class="wait-time-cell" data-timestamp="${queue.createdAt}">${waitTime}</td>
+                    <td>${statusBadge}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function updateStats(queues) {
+        const waitingQueues = queues.filter(q => q.status === 'waiting');
+        document.getElementById('totalQueue').textContent = waitingQueues.length;
+        
+        if (waitingQueues.length > 0) {
+            const totalMinutes = waitingQueues.reduce((sum, q) => {
+                return sum + calculateWaitTimeMinutes(q.createdAt);
+            }, 0);
+            const avgMinutes = Math.round(totalMinutes / waitingQueues.length);
+            document.getElementById('avgWaitTime').textContent = avgMinutes;
+        } else {
+            document.getElementById('avgWaitTime').textContent = '0';
+        }
+    }
+
+        function calculateWaitTime(timestamp) {
+            if (!timestamp) return '00:00:00';
+            const now = Date.now();
+            const diffMs = now - timestamp;    
+            const diffSecs = Math.floor(diffMs / 1000);
+            const secs = diffSecs % 60;
+            const mins = Math.floor(diffSecs / 60) % 60;
+            const hours = Math.floor(diffSecs / 3600);
+            return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+    function calculateWaitTimeMinutes(timestamp) {
+        if (!timestamp) return 0;
+        const now = Date.now();
+        const diffMs = now - timestamp;
+        return Math.floor(diffMs / 60000);
+    }
+
+    function getInitials(name) {
+        if (!name) return '--';
+        const parts = name.split(' ');
+        if (parts.length >= 2) {
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    }
+
+ async function loadCounterStatus() {
+    try {
+        // ⬇️ ALWAYS FETCH FROM DATABASE FIRST
+        const snapshot = await database.ref(`counters/${staffCounter}`).once('value');
+        const counterData = snapshot.val();
+        
+        if (counterData && counterData.status) {
+            counterStatus = counterData.status;  // ⬅️ Get actual status from DB
+        } else {
+            counterStatus = 'open';  // ⬅️ Fallback if no data
+        }
+        
+        updateCounterStatusUI(counterStatus);
+        
+        console.log('✅ Counter status loaded:', counterStatus);
+        
+        // Listen for real-time status changes
+        database.ref(`counters/${staffCounter}/status`).on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                const newStatus = snapshot.val();
+                if (newStatus !== counterStatus) {
+                    counterStatus = newStatus;
+                    updateCounterStatusUI(counterStatus);
+                    console.log('🔄 Counter status changed:', counterStatus);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error loading counter status:', error);
+    }
+}
+
+function updateCounterStatusUI(status) {
+    const statusText = document.getElementById('counterStatusText');
+    const toggleBtn = document.getElementById('toggleCounterBtn');
+    
+    if (!statusText || !toggleBtn) {
+        console.warn('Counter status UI elements not found');
+        return;
+    }
+    
+    if (status === 'open') {
+        statusText.textContent = 'OPEN';
+        statusText.className = 'status-value open';
+        
+        toggleBtn.className = 'toggle-counter-btn';
+        toggleBtn.innerHTML = '<i class="ri-close-circle-line"></i><span>Close Counter</span>';
+        toggleBtn.disabled = false;
+    } else if (status === 'closed') {
+        statusText.textContent = 'CLOSED';
+        statusText.className = 'status-value closed';
+        
+        toggleBtn.className = 'toggle-counter-btn open-btn';
+        toggleBtn.innerHTML = '<i class="ri-check-circle-line"></i><span>Open Counter</span>';
+        toggleBtn.disabled = false;
+    } else {
+        // Loading state
+        statusText.textContent = 'LOADING...';
+        statusText.className = 'status-value';
+        toggleBtn.disabled = true;
+    }
+}
+
+ // 🎯 CALL NEXT STUDENT - WITH COUNTER FILTER
+document.getElementById('callNextBtn').addEventListener('click', async () => {
+    // ✅ DEBOUNCE — kalau tengah process, ignore click
+    if (isCallingNext) return;
+    isCallingNext = true;
+
+    // ✅ CHECK — ada ke student tengah serving sekarang
+if (currentServingQueueId) {
+    alert('⚠️ Please complete the current service before calling the next student!');
+    isCallingNext = false;
+    return;
+}
+
+    try {
+        const btn = document.getElementById('callNextBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span>Calling...</span>';
+
+        const snapshot = await database.ref('queue/active')
+            .orderByChild('counterNumber')
+            .equalTo(staffCounterNumber)
+            .once('value');
+
+        if (!snapshot.exists()) {
+            alert('No students in queue for your counter');
+            return;
+        }
+
+        const queues = [];
+        snapshot.forEach(child => {
+            const queueData = child.val();
+            if (queueData.status === 'waiting') {
+                queues.push({ id: child.key, ...queueData });
+            }
+        });
+
+        if (queues.length === 0) {
+            alert('No waiting students for your counter');
+            return;
+        }
+
+        queues.sort((a, b) => a.createdAt - b.createdAt);
+        const nextQueue = queues[0];
+
+        if (nextQueue.counterNumber !== staffCounterNumber) {
+            alert('This student is assigned to a different counter');
+            return;
+        }
+
+        await database.ref(`queue/active/${nextQueue.id}`).update({
+            status: 'serving',
+            counter: staffCounter,
+            staffId: staffId,
+            calledAt: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        await database.ref(`counters/${staffCounter}`).update({
+            currentServing: nextQueue.queueNumber,
+            lastUpdated: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        currentServingNumber = nextQueue.queueNumber;
+        currentServingQueueId = nextQueue.id;
+
+        console.log('✅ Called:', nextQueue.queueNumber, 'Counter:', nextQueue.counterNumber);
+
+    } catch (error) {
+        console.error('❌ Error calling next:', error);
+        alert('Error calling next student');
+    } finally {
+        // ✅ Reset selepas 1 saat — prevent rapid double click
+        setTimeout(() => {
+            isCallingNext = false;
+            const btn = document.getElementById('callNextBtn');
+            btn.disabled = false;
+            btn.innerHTML = '<span>CALL NEXT STUDENT</span><i class="ri-arrow-right-line"></i>';
+        }, 1000);
+    }
+});
+
+    // 🔁 RECALL CURRENT STUDENT
+    document.getElementById('recallBtn').addEventListener('click', async () => {
+        if (!currentServingQueueId) return;
+        
+        try {
+            await database.ref(`counters/${staffCounter}`).update({
+                currentServing: currentServingNumber,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP,
+                recalled: true
+            });
+            
+            // Clear recalled flag after 2 seconds
+            setTimeout(async () => {
+                await database.ref(`counters/${staffCounter}/recalled`).remove();
+            }, 2000);
+            
+            alert(`Recalled: ${currentServingNumber}`);
+            console.log('✅ Recalled:', currentServingNumber);
+            
+        } catch (error) {
+            console.error('❌ Error recalling:', error);
+            alert('Error recalling student');
+        }
+    });
+
+    // ✅ COMPLETE SERVICE
+    document.getElementById('completeBtn').addEventListener('click', async () => {
+        if (!currentServingQueueId) return;
+        
+        if (!confirm(`Complete service for ${currentServingNumber}?`)) return;
+        
+        try {
+            const btn = document.getElementById('completeBtn');
+            btn.disabled = true;
+            btn.textContent = 'Completing...';
+            
+            const queueRef = database.ref(`queue/active/${currentServingQueueId}`);
+            const snapshot = await queueRef.once('value');
+            const queueData = snapshot.val();
+            
+            if (!queueData) {
+                throw new Error('Queue data not found');
+            }
+            
+            // Move to completed
+            await database.ref(`queue/completed/${currentServingQueueId}`).set({
+                ...queueData,
+                status: 'completed',
+                completedAt: firebase.database.ServerValue.TIMESTAMP,
+                completedBy: staffId,
+                completedByName: localStorage.getItem('staffName')
+            });
+
+            await database.ref(`tickets_history/${queueData.studentId}/${currentServingQueueId}`).set({
+                ...queueData,
+                status: 'completed',
+                completedTimestamp: Date.now(),
+                waitTimeMinutes: Math.floor((Date.now() - queueData.createdAt) / 60000)
+            });
+            
+            // Remove from active
+            await queueRef.remove();
+            
+            // Clear counter
+            await database.ref(`counters/${staffCounter}`).update({
+                currentServing: null,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            console.log('✅ Completed:', currentServingNumber);
+            
+            btn.disabled = false;
+            btn.textContent = 'Complete Service';
+            
+        } catch (error) {
+            console.error('❌ Error completing:', error);
+            alert('Error completing service: ' + error.message);
+            document.getElementById('completeBtn').disabled = false;
+            document.getElementById('completeBtn').textContent = 'Complete Service';
+        }
+    });
+
+    document.getElementById('toggleCounterBtn').addEventListener('click', async () => {
+    const newStatus = counterStatus === 'open' ? 'closed' : 'open';
+    const action = newStatus === 'closed' ? 'close' : 'open';
+    
+    if (!confirm(`Are you sure you want to ${action} your counter?`)) return;
+    
+    try {
+        await database.ref(`counters/${staffCounter}`).update({
+            status: newStatus,
+            lastUpdated: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        console.log(`✅ Counter ${action}ed successfully`);
+        
+    } catch (error) {
+        console.error('❌ Error toggling counter:', error);
+        alert('Error updating counter status');
+    }
+});
+
+    // 🚪 LOGOUT
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to logout?')) return;
+        
+        try {
+            const btn = document.getElementById('logoutBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ri-logout-box-line"></i><span>Logging out...</span>';
+            
+            // Update staff status
+            if (staffId) {
+                await database.ref(`staff/${staffId}`).update({
+                    status: 'offline',
+                    lastLogout: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+            
+            // Update counter status
+            if (staffCounter) {
+                await database.ref(`counters/${staffCounter}`).update({
+                    status: 'closed',
+                    currentServing: null,
+                    staffId: null,
+                    staffName: null,
+                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+            
+            // Cleanup and redirect
+            await cleanupAndRedirect();
+            
+        } catch (error) {
+            console.error('❌ Logout error:', error);
+            alert('Error logging out: ' + error.message);
+            document.getElementById('logoutBtn').disabled = false;
+            document.getElementById('logoutBtn').innerHTML = '<i class="ri-logout-box-line"></i><span>Logout</span>';
+        }
+    });
+
+    // 🛡️ Prevent back button after logout
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || performance.navigation.type === 2) {
+            // Page was loaded from cache (back button)
+            const hasStaffId = localStorage.getItem('currentStaffId');
+            if (!hasStaffId) {
+                window.location.href = 'index.html';
+            }
+        }
+    });
+
+</script>
+</body>
+</html>

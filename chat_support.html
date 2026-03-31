@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Support - UPTM Queue System</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="chat_support.css">
+
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="ri-graduation-cap-fill"></i>
+                    <div class="sidebar-logo-text">
+                        <h3>UPTM</h3>
+                        <p>BURSARY SYSTEM</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <i class="ri-dashboard-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="manage_queue.html" class="menu-item">
+                    <i class="ri-list-check"></i>
+                    <span> Manage Queue</span>
+                </a>
+                <a href="report.html" class="menu-item">
+                    <i class="ri-file-chart-fill"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="announcement.html" class="menu-item">
+                    <i class="ri-megaphone-fill"></i>
+                    <span>Announcement</span>
+                </a>
+                <a href="chat_support.html" class="menu-item active">
+                    <i class="ri-chat-3-fill"></i>
+                    <span>Chat Support</span>
+                </a>
+                <a href="profile.html" class="menu-item">
+                    <i class="ri-user-fill"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="counter-status-section">
+                    <div class="counter-status-info">
+                        <span class="status-label">Counter Status:</span>
+                        <span class="status-value" id="counterStatusText">OPEN</span>
+                    </div>
+                    <button class="toggle-counter-btn" id="toggleCounterBtn">
+                        <i class="ri-close-circle-line"></i>
+                        <span>Close Counter</span>
+                    </button>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="ri-logout-box-line"></i>
+                    <span><href="index.html">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Chat Support</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="user-name" id="staffName">Loading...</div>
+                        <div class="user-counter">COUNTER <span id="counterNumber">---</span> - <span class="user-status">ONLINE</span></div>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">--</div>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <!-- Chat List -->
+                <div class="chat-list">
+                    <div class="chat-list-header">
+                        <h3>Conversations</h3>
+                        <div class="search-box">
+                            <i class="ri-search-line"></i>
+                            <input type="text" placeholder="Search students..." id="searchInput">
+                        </div>
+                    </div>
+                    <div class="chat-list-items" id="chatListItems">
+                        <div class="loading">Loading conversations...</div>
+                    </div>
+                </div>
+
+                <!-- Chat Window -->
+                <div class="chat-window" id="chatWindow">
+                    <div class="no-chat-selected">
+                        <i class="ri-chat-3-line"></i>
+                        <p>Select a conversation to start chatting</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2mr_mcnjwujkUs0BaIthRKzLbjheeFsU",
+            authDomain: "uptm-smartqueue.firebaseapp.com",
+            databaseURL: "https://uptm-smartqueue-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "uptm-smartqueue",
+            storageBucket: "uptm-smartqueue.firebasestorage.app",
+            messagingSenderId: "750707323311",
+            appId: "1:750707323311:web:d0289dab0557d3864f3f5a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let currentUser = null;
+        let staffId = null;
+        let staffName = null;
+        let staffCounter = null;
+        let currentChatId = null;
+        let allChats = [];
+        let counterStatus = null; 
+
+        // Authentication check
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            staffId = localStorage.getItem('currentStaffId');
+            if (!staffId) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            try {
+                const staffSnapshot = await database.ref(`staff/${staffId}`).once('value');
+                if (!staffSnapshot.exists()) {
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                const staffData = staffSnapshot.val();
+                if (staffData.email !== user.email) {
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                currentUser = user;
+                staffName = staffData.name;
+                staffCounter = staffData.counter;
+
+                await loadCounterStatus(); 
+                await loadStaffData();
+                loadChats();
+                setupRealtimeListeners();
+
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = "index.html";
+            }
+        });
+
+        function loadChats() {
+  database.ref('chats')
+    .orderByChild('status')
+    .equalTo('active')
+    .on('value', (snapshot) => {
+        const previousChats = {};
+        allChats.forEach(c => previousChats[c.chatId] = c.unreadCount?.staff || 0);
+
+        allChats = [];
+        snapshot.forEach(child => {
+            const chat = child.val();
+            allChats.push(chat);
+
+            // ✅ Chime bila ada unread baru dari student
+            const prevUnread = previousChats[chat.chatId] || 0;
+            const currUnread = chat.unreadCount?.staff || 0;
+            const isNotCurrentChat = chat.chatId !== currentChatId;
+
+            if (currUnread > prevUnread && isNotCurrentChat) {
+                playChime();
+            }
+        });
+
+        allChats.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
+        displayChatList(allChats);
+    });
+        }
+
+        function displayChatList(chats) {
+            const container = document.getElementById('chatListItems');
+
+            if (chats.length === 0) {
+                container.innerHTML = '<div class="loading">No conversations yet</div>';
+                return;
+            }
+
+            container.innerHTML = chats.map(chat => {
+                const unreadCount = chat.unreadCount?.staff || 0;
+                const timeStr = formatTime(chat.lastMessageTime);
+
+                return `
+                    <div class="chat-item ${chat.chatId === currentChatId ? 'active' : ''}" 
+                         onclick="selectChat('${chat.chatId}')">
+                        <div class="chat-item-header">
+                            <span class="student-name">${chat.studentName}</span>
+                            <span class="chat-time">${timeStr}</span>
+                        </div>
+                        <div class="last-message">${chat.lastMessage || 'No messages yet'}</div>
+                        <div class="chat-item-footer">
+                            <span class="student-id">${chat.studentId}</span>
+                            ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectChat(chatId) {
+            currentChatId = chatId;
+            displayChatList(allChats); // Refresh to show active state
+
+            const chat = allChats.find(c => c.chatId === chatId);
+            if (!chat) return;
+
+            // Load messages
+            loadMessages(chatId, chat);
+
+            // Mark messages as read
+            markMessagesAsRead(chatId);
+        }
+
+        function loadMessages(chatId, chat) {
+            const chatWindow = document.getElementById('chatWindow');
+            
+            chatWindow.innerHTML = `
+                <div class="chat-header">
+                    <div class="chat-header-info">
+                        <h3>${chat.studentName}</h3>
+                        <p>${chat.studentId}</p>
+                    </div>
+                    <div class="online-status">
+                        <div class="online-dot"></div>
+                        <span>ACTIVE</span>
+                    </div>
+                </div>
+                <div class="messages-container" id="messagesContainer">
+                    <div class="loading">Loading messages...</div>
+                </div>
+                <div class="message-input-container">
+                    <div class="message-input">
+                        <textarea id="messageInput" placeholder="Type your message..." rows="1"></textarea>
+                        <button class="send-btn" onclick="sendMessage()">
+                            <span>Send</span>
+                            <i class="ri-send-plane-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Auto-resize textarea
+            const textarea = document.getElementById('messageInput');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+
+            // Send on Enter (Shift+Enter for new line)
+            textarea.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Listen for messages
+            database.ref(`messages/${chatId}`)
+                .on('value', (snapshot) => {
+                    const messages = [];
+                    snapshot.forEach(child => {
+                        messages.push(child.val());
+                    });
+
+                    messages.sort((a, b) => a.timestamp - b.timestamp);
+                    displayMessages(messages);
+                });
+        }
+
+        function displayMessages(messages) {
+            const container = document.getElementById('messagesContainer');
+
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="loading">No messages yet</div>';
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => {
+                const isStaff = msg.senderType === 'staff';
+                const timeStr = formatMessageTime(msg.timestamp);
+
+                return `
+                    <div class="message ${isStaff ? 'staff' : 'student'}">
+                        <div class="message-content">
+                            ${!isStaff ? `<div class="sender-name">${msg.senderName}</div>` : ''}
+                            <div class="message-text">${escapeHtml(msg.message)}</div>
+                            <div class="message-time">${timeStr}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message || !currentChatId) return;
+
+            const messageId = database.ref(`messages/${currentChatId}`).push().key;
+
+            const messageData = {
+                messageId: messageId,
+                chatId: currentChatId,
+                senderId: staffId,
+                senderType: 'staff',
+                senderName: staffName,
+                message: message,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                isRead: false
+            };
+
+            database.ref(`messages/${currentChatId}/${messageId}`).set(messageData)
+                .then(() => {
+                    // Update chat info
+                    database.ref(`chats/${currentChatId}`).update({
+                        lastMessage: message,
+                        lastMessageTime: firebase.database.ServerValue.TIMESTAMP,
+                        lastMessageBy: 'staff',
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                        'unreadCount/student': firebase.database.ServerValue.increment(1)
+                    });
+
+                    input.value = '';
+                    input.style.height = 'auto';
+                })
+                .catch(error => {
+                    console.error('Error sending message:', error);
+                    alert('Failed to send message');
+                });
+        }
+
+        function markMessagesAsRead(chatId) {
+            database.ref(`messages/${chatId}`)
+                .orderByChild('senderType')
+                .equalTo('student')
+                .once('value', (snapshot) => {
+                    snapshot.forEach(child => {
+                        child.ref.update({ isRead: true });
+                    });
+
+                    // Reset staff unread count
+                    database.ref(`chats/${chatId}/unreadCount/staff`).set(0);
+                });
+        }
+
+        function setupRealtimeListeners() {
+            // Listen for new chats
+            database.ref('chats').on('child_added', () => {
+                // Refresh will happen automatically from loadChats listener
+            });
+
+            database.ref('chats').on('child_changed', () => {
+                // Refresh will happen automatically from loadChats listener
+            });
+        }
+
+        function formatTime(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days === 1) return 'Yesterday';
+            if (days < 7) return `${days}d ago`;
+
+            const date = new Date(timestamp);
+            return date.toLocaleDateString();
+        }
+
+        function formatMessageTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== AUDIO CHIME =====
+function playChime() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Note 1
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.frequency.value = 880;
+        gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc1.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.3);
+
+        // Note 2
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.frequency.value = 1100;
+        gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.2);
+        gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        osc2.start(ctx.currentTime + 0.2);
+        osc2.stop(ctx.currentTime + 0.5);
+
+    } catch (e) {
+        console.log('Audio not supported:', e);
+    }
+}
+
+        async function cleanupAndRedirect() {
+    try {
+        localStorage.removeItem('currentStaffId');
+        localStorage.removeItem('currentCounter');
+        localStorage.removeItem('staffName');
+        localStorage.removeItem('staffEmail');
+        await auth.signOut();
+    } catch (error) {
+        console.error('Error during cleanup:', error);
+    } finally {
+        window.location.href = "index.html";
+    }
+}
+
+// Add after cleanupAndRedirect function
+
+        async function loadStaffData() {
+            try {
+                const snapshot = await database.ref(`staff/${staffId}`).once('value');
+                const staffData = snapshot.val();
+                    const avatarColor = staffData.avatarColor || 'linear-gradient(135deg,#667eea,#764ba2)';
+    localStorage.setItem('avatarColor', avatarColor);
+    document.getElementById('userAvatar').style.background = avatarColor;
+
+                if (!staffData) {
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                staffCounter = staffData.counter;
+                staffCounterNumber = parseInt(staffCounter.replace('B0', ''));
+
+                document.getElementById('staffName').textContent = staffData.name;
+                document.getElementById('counterNumber').textContent = staffCounter;
+                document.getElementById('userAvatar').textContent = getInitials(staffData.name);
+
+                console.log('✅ Staff loaded:', staffData.name, 'Counter:', staffCounterNumber);
+            } catch (error) {
+                console.error('❌ Error loading staff:', error);
+                window.location.href = "index.html";
+            }
+        }
+
+function getInitials(name) {
+    if (!name) return '--';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+}
+
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allChats.filter(chat => 
+                chat.studentName.toLowerCase().includes(searchTerm) ||
+                chat.studentId.toLowerCase().includes(searchTerm)
+            );
+            displayChatList(filtered);
+        });
+
+         async function loadCounterStatus() {
+    try {
+        // ⬇️ ALWAYS FETCH FROM DATABASE FIRST
+        const snapshot = await database.ref(`counters/${staffCounter}`).once('value');
+        const counterData = snapshot.val();
+        
+        if (counterData && counterData.status) {
+            counterStatus = counterData.status;  // ⬅️ Get actual status from DB
+        } else {
+            counterStatus = 'open';  // ⬅️ Fallback if no data
+        }
+        
+        updateCounterStatusUI(counterStatus);
+        
+        console.log('✅ Counter status loaded:', counterStatus);
+        
+        // Listen for real-time status changes
+        database.ref(`counters/${staffCounter}/status`).on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                const newStatus = snapshot.val();
+                if (newStatus !== counterStatus) {
+                    counterStatus = newStatus;
+                    updateCounterStatusUI(counterStatus);
+                    console.log('🔄 Counter status changed:', counterStatus);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error loading counter status:', error);
+    }
+}
+
+function updateCounterStatusUI(status) {
+    const statusText = document.getElementById('counterStatusText');
+    const toggleBtn = document.getElementById('toggleCounterBtn');
+    
+    if (!statusText || !toggleBtn) {
+        console.warn('Counter status UI elements not found');
+        return;
+    }
+    
+    if (status === 'open') {
+        statusText.textContent = 'OPEN';
+        statusText.className = 'status-value open';
+        
+        toggleBtn.className = 'toggle-counter-btn';
+        toggleBtn.innerHTML = '<i class="ri-close-circle-line"></i><span>Close Counter</span>';
+        toggleBtn.disabled = false;
+    } else if (status === 'closed') {
+        statusText.textContent = 'CLOSED';
+        statusText.className = 'status-value closed';
+        
+        toggleBtn.className = 'toggle-counter-btn open-btn';
+        toggleBtn.innerHTML = '<i class="ri-check-circle-line"></i><span>Open Counter</span>';
+        toggleBtn.disabled = false;
+    } else {
+        // Loading state
+        statusText.textContent = 'LOADING...';
+        statusText.className = 'status-value';
+        toggleBtn.disabled = true;
+    }
+}
+
+    document.getElementById('toggleCounterBtn').addEventListener('click', async () => {
+    const newStatus = counterStatus === 'open' ? 'closed' : 'open';
+    const action = newStatus === 'closed' ? 'close' : 'open';
+    
+    if (!confirm(`Are you sure you want to ${action} your counter?`)) return;
+    
+    try {
+        await database.ref(`counters/${staffCounter}`).update({
+            status: newStatus,
+            lastUpdated: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        console.log(`✅ Counter ${action}ed successfully`);
+        
+    } catch (error) {
+        console.error('❌ Error toggling counter:', error);
+        alert('Error updating counter status');
+    }
+});
+
+    // 🚪 LOGOUT
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to logout?')) return;
+        
+        try {
+            const btn = document.getElementById('logoutBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ri-logout-box-line"></i><span>Logging out...</span>';
+            
+            // Update staff status
+            if (staffId) {
+                await database.ref(`staff/${staffId}`).update({
+                    status: 'offline',
+                    lastLogout: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+            
+            // Update counter status
+            if (staffCounter) {
+                await database.ref(`counters/${staffCounter}`).update({
+                    status: 'closed',
+                    currentServing: null,
+                    staffId: null,
+                    staffName: null,
+                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+            
+            // Cleanup and redirect
+            await cleanupAndRedirect();
+            
+        } catch (error) {
+            console.error('❌ Logout error:', error);
+            alert('Error logging out: ' + error.message);
+            document.getElementById('logoutBtn').disabled = false;
+            document.getElementById('logoutBtn').innerHTML = '<i class="ri-logout-box-line"></i><span>Logout</span>';
+        }
+    });
+
+    // 🛡️ Prevent back button after logout
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || performance.navigation.type === 2) {
+            // Page was loaded from cache (back button)
+            const hasStaffId = localStorage.getItem('currentStaffId');
+            if (!hasStaffId) {
+                window.location.href = 'index.html';
+            }
+        }
+    });
+    </script>
+</body>
+</html>

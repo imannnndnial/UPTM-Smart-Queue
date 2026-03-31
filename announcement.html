@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - UPTM Queue System</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="announcement.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="ri-graduation-cap-fill"></i>
+                <div class="sidebar-logo-text">
+                    <h3>UPTM</h3>
+                    <p>BURSARY SYSTEM</p>
+                </div>
+            </div>
+        </div>
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item"><i class="ri-dashboard-fill"></i><span>Dashboard</span></a>
+            <a href="manage_queue.html" class="menu-item"><i class="ri-list-check"></i><span>Manage Queue</span></a>
+            <a href="report.html" class="menu-item"><i class="ri-file-chart-fill"></i><span>Reports</span></a>
+            <a href="announcement.html" class="menu-item active"><i class="ri-megaphone-fill"></i><span>Announcement</span></a>
+            <a href="chat_support.html" class="menu-item"><i class="ri-chat-3-fill"></i><span>Chat Support</span></a>
+            <a href="profile.html" class="menu-item"><i class="ri-user-fill"></i><span>Profile</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="counter-status-section">
+                <div class="counter-status-info">
+                    <span class="status-label">Counter Status:</span>
+                    <span class="status-value" id="counterStatusText">OPEN</span>
+                </div>
+                <button class="toggle-counter-btn" id="toggleCounterBtn">
+                    <i class="ri-close-circle-line"></i><span>Close Counter</span>
+                </button>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="ri-logout-box-line"></i><span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title"><h1>Announcements</h1></div>
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="staffName">Loading...</div>
+                    <div class="user-counter">COUNTER <span id="counterNumber">---</span> - <span class="user-status">ONLINE</span></div>
+                </div>
+                <div class="user-avatar" id="userAvatar">--</div>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="ri-edit-box-line"></i>
+                        <h3>Post Announcement</h3>
+                    </div>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="inputTitle" placeholder="Announcement title..." />
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea id="inputMessage" placeholder="Write your announcement here..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <div class="type-selector">
+                            <button class="type-btn selected info" onclick="selectType('info', this)">ℹ️ Info</button>
+                            <button class="type-btn" onclick="selectType('warning', this)">⚠️ Warning</button>
+                            <button class="type-btn" onclick="selectType('urgent', this)">🚨 Urgent</button>
+                        </div>
+                    </div>
+                    <button class="btn-post" onclick="postAnnouncement()">
+                        <i class="ri-send-plane-fill"></i> Post Announcement
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="ri-megaphone-fill"></i>
+                        <h3>Recent Announcements</h3>
+                    </div>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" onclick="filterAnnouncements('all', this)">All</button>
+                        <button class="filter-tab" onclick="filterAnnouncements('info', this)">Info</button>
+                        <button class="filter-tab" onclick="filterAnnouncements('warning', this)">Warning</button>
+                        <button class="filter-tab" onclick="filterAnnouncements('urgent', this)">Urgent</button>
+                    </div>
+                    <div class="announcement-list" id="announcementList">
+                        <div class="loading-state">Loading announcements...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyC2mr_mcnjwujkUs0BaIthRKzLbjheeFsU",
+        authDomain: "uptm-smartqueue.firebaseapp.com",
+        databaseURL: "https://uptm-smartqueue-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "uptm-smartqueue",
+        storageBucket: "uptm-smartqueue.firebasestorage.app",
+        messagingSenderId: "750707323311",
+        appId: "1:750707323311:web:d0289dab0557d3864f3f5a"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+
+    let currentUser = null;
+    let staffId = null;
+    let staffCounter = null;
+    let staffCounterNumber = null;
+    let counterStatus = null;
+    let selectedType = 'info';
+    let allAnnouncements = [];
+    let currentFilter = 'all';
+
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) { window.location.href = "index.html"; return; }
+
+        staffId = localStorage.getItem('currentStaffId');
+        if (!staffId) { window.location.href = "index.html"; return; }
+
+        try {
+            const staffSnapshot = await database.ref(`staff/${staffId}`).once('value');
+            if (!staffSnapshot.exists()) { window.location.href = "index.html"; return; }
+
+            const staffData = staffSnapshot.val();
+            if (staffData.email !== user.email) { window.location.href = "index.html"; return; }
+
+            currentUser = user;
+            staffCounter = staffData.counter;
+            staffCounterNumber = parseInt(staffCounter.replace('B0', ''));
+
+            document.getElementById('staffName').textContent = staffData.name;
+            document.getElementById('counterNumber').textContent = staffCounter;
+            document.getElementById('userAvatar').textContent = getInitials(staffData.name);
+
+            // ✅ Apply avatar color dari Firebase
+            const avatarColor = staffData.avatarColor || localStorage.getItem('avatarColor') || 'linear-gradient(135deg,#667eea,#764ba2)';
+            localStorage.setItem('avatarColor', avatarColor);
+            document.getElementById('userAvatar').style.background = avatarColor;
+
+            await loadCounterStatus();
+            loadAnnouncements();
+
+        } catch (error) {
+            console.error('Error:', error);
+            window.location.href = "index.html";
+        }
+    });
+
+    function selectType(type, btn) {
+        selectedType = type;
+        document.querySelectorAll('.type-btn').forEach(b => { b.className = 'type-btn'; });
+        btn.className = `type-btn selected ${type}`;
+    }
+
+    async function postAnnouncement() {
+        const title = document.getElementById('inputTitle').value.trim();
+        const message = document.getElementById('inputMessage').value.trim();
+
+        if (!title || !message) { alert('Please fill in title and message!'); return; }
+        if (!confirm(`Post this announcement?\n\n📢 ${title}\n\n${message}\n\nType: ${selectedType.toUpperCase()}`)) return;
+
+        const btn = document.querySelector('.btn-post');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ri-loader-4-line"></i> Posting...';
+
+        try {
+            const newId = database.ref('announcements').push().key;
+            await database.ref(`announcements/${newId}`).set({
+                id: newId, title, message, type: selectedType,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                postedBy: document.getElementById('staffName').textContent
+            });
+            document.getElementById('inputTitle').value = '';
+            document.getElementById('inputMessage').value = '';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ri-send-plane-fill"></i> Post Announcement';
+        } catch (error) {
+            console.error('❌ Error:', error);
+            alert('Failed to post announcement');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ri-send-plane-fill"></i> Post Announcement';
+        }
+    }
+
+    function loadAnnouncements() {
+        database.ref('announcements').orderByChild('timestamp').on('value', (snapshot) => {
+            allAnnouncements = [];
+            snapshot.forEach(child => { allAnnouncements.push({ id: child.key, ...child.val() }); });
+            allAnnouncements.sort((a, b) => b.timestamp - a.timestamp);
+            displayAnnouncements();
+        });
+    }
+
+    function filterAnnouncements(type, btn) {
+        currentFilter = type;
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        displayAnnouncements();
+    }
+
+    function displayAnnouncements() {
+        const list = document.getElementById('announcementList');
+        const filtered = currentFilter === 'all' ? allAnnouncements : allAnnouncements.filter(a => a.type === currentFilter);
+
+        if (filtered.length === 0) {
+            list.innerHTML = `<div class="empty-state"><i class="ri-megaphone-line"></i><p>No announcements yet</p></div>`;
+            return;
+        }
+
+        list.innerHTML = filtered.map(item => `
+            <div class="announcement-item">
+                <div class="type-indicator ${item.type}"></div>
+                <div class="announcement-body">
+                    <h4>${escapeHtml(item.title)}</h4>
+                    <p>${escapeHtml(item.message)}</p>
+                    <div class="announcement-meta">
+                        <span class="badge ${item.type}">${item.type.toUpperCase()}</span>
+                        <span class="meta-time">${getTimeAgo(item.timestamp)}</span>
+                        <span class="meta-time">by ${item.postedBy || 'Staff'}</span>
+                    </div>
+                </div>
+                <button class="delete-btn" onclick="deleteAnnouncement('${item.id}')" title="Delete">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    async function deleteAnnouncement(id) {
+        if (!confirm('Delete this announcement?')) return;
+        await database.ref(`announcements/${id}`).remove();
+    }
+
+    async function loadCounterStatus() {
+        try {
+            const snapshot = await database.ref(`counters/${staffCounter}`).once('value');
+            const counterData = snapshot.val();
+            counterStatus = (counterData && counterData.status) ? counterData.status : 'open';
+            updateCounterStatusUI(counterStatus);
+
+            database.ref(`counters/${staffCounter}/status`).on('value', (snap) => {
+                if (snap.exists()) { counterStatus = snap.val(); updateCounterStatusUI(counterStatus); }
+            });
+        } catch (error) { console.error('❌ Error loading counter status:', error); }
+    }
+
+    function updateCounterStatusUI(status) {
+        const statusText = document.getElementById('counterStatusText');
+        const toggleBtn = document.getElementById('toggleCounterBtn');
+        if (!statusText || !toggleBtn) return;
+
+        if (status === 'open') {
+            statusText.textContent = 'OPEN';
+            statusText.className = 'status-value open';
+            toggleBtn.className = 'toggle-counter-btn';
+            toggleBtn.innerHTML = '<i class="ri-close-circle-line"></i><span>Close Counter</span>';
+        } else {
+            statusText.textContent = 'CLOSED';
+            statusText.className = 'status-value closed';
+            toggleBtn.className = 'toggle-counter-btn open-btn';
+            toggleBtn.innerHTML = '<i class="ri-check-circle-line"></i><span>Open Counter</span>';
+        }
+    }
+
+    document.getElementById('toggleCounterBtn').addEventListener('click', async () => {
+        const newStatus = counterStatus === 'open' ? 'closed' : 'open';
+        if (!confirm(`Are you sure you want to ${newStatus === 'closed' ? 'close' : 'open'} your counter?`)) return;
+        await database.ref(`counters/${staffCounter}`).update({ status: newStatus, lastUpdated: firebase.database.ServerValue.TIMESTAMP });
+    });
+
+    async function cleanupAndRedirect() {
+        try {
+            localStorage.removeItem('currentStaffId');
+            localStorage.removeItem('currentCounter');
+            localStorage.removeItem('staffName');
+            localStorage.removeItem('staffEmail');
+            await auth.signOut();
+        } catch (e) { console.error(e); } finally { window.location.href = "index.html"; }
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to logout?')) return;
+        try {
+            const btn = document.getElementById('logoutBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ri-logout-box-line"></i><span>Logging out...</span>';
+
+            if (staffId) await database.ref(`staff/${staffId}`).update({ status: 'offline', lastLogout: firebase.database.ServerValue.TIMESTAMP });
+            if (staffCounter) await database.ref(`counters/${staffCounter}`).update({ status: 'closed', currentServing: null, staffId: null, staffName: null, lastUpdated: firebase.database.ServerValue.TIMESTAMP });
+            await cleanupAndRedirect();
+        } catch (error) {
+            console.error('❌ Logout error:', error);
+            document.getElementById('logoutBtn').disabled = false;
+            document.getElementById('logoutBtn').innerHTML = '<i class="ri-logout-box-line"></i><span>Logout</span>';
+        }
+    });
+
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || performance.navigation.type === 2) {
+            if (!localStorage.getItem('currentStaffId')) window.location.href = 'index.html';
+        }
+    });
+
+    function getInitials(name) {
+        if (!name) return '--';
+        const parts = name.split(' ');
+        return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.substring(0, 2).toUpperCase();
+    }
+
+    function getTimeAgo(timestamp) {
+        const diff = Date.now() - timestamp;
+        const mins = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        if (mins < 1) return 'Just now';
+        if (mins < 60) return `${mins}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days === 1) return 'Yesterday';
+        return `${days}d ago`;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>
