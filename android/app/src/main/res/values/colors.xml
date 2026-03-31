@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary_blue">#2563EB</color>
+    <color name="primary_blue_dark">#1E40AF</color>
+    <color name="primary_blue_light">#3B82F6</color>
+
+    <!-- Background Colors -->
+    <color name="dark_background">#1A1D2E</color>
+    <color name="toolbar_dark">#16192B</color>
+    <color name="input_background">#252938</color>
+
+    <!-- Text Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="white_80">#CCFFFFFF</color>
+    <color name="gray_text">#9CA3AF</color>
+    <color name="hint_text">#6B7280</color>
+
+    <!-- Icon Colors -->
+    <color name="gray_icon">#6B7280</color>
+
+    <!-- Border & Divider Colors -->
+    <color name="input_stroke">#374151</color>
+    <color name="border_gray">#374151</color>
+    <color name="divider_gray">#374151</color>
+
+    <!-- Status Colors -->
+    <color name="error_red">#EF4444</color>
+    <color name="success_green">#10B981</color>
+    <color name="warning_yellow">#F59E0B</color>
+
+    <!-- Additional Colors -->
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+
+    <!-- homepage -->
+    <color name="card_background">#1E2A3A</color>
+    <color name="green_accent">#4CAF50</color>
+    <color name="orange_accent">#FF9800</color>
+    <color name="purple_accent">#9C27B0</color>
+
+    <color name="green_bg">#064E3B</color>
+    <color name="gray_bg">#374151</color>
+    <color name="primary_blue_bg">#1E3A8A</color>
+
+    <!-- ⏰ NEW: Countdown Timer Warning Colors -->
+    <color name="warning_dark_bg">#3F2604</color>        <!-- Dark orange bg for countdown bar -->
+    <color name="warning_text">#F59E0B</color>           <!-- Using your existing warning_yellow -->
+    <color name="warning_medium">#FB923C</color>         <!-- Medium orange (< 1 hour) -->
+    <color name="warning_critical">#EF4444</color>       <!-- Using your existing error_red (< 30 min) -->
+
+</resources>

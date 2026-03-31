@@ -1,0 +1,36 @@
+{
+  "students": {
+    "2408016911": {
+      "name": "Hilman Danial",
+      "password": "uptm123",
+      "email": "kl2408016911@student.uptm.edu.my",
+      "matricNo": "AM2408016911",
+      "phone": "0146149798"
+      
+    },
+    "2408016849": {
+      "name": "Aiman",
+      "password": "uptm123",
+      "email": "kl2408016849@student.uptm.edu.my",
+      "matricNo": "AM2408016849",
+      "phone": "0194050086"
+    },
+    "2408016848": {
+      "name": "Kabir Atiq",
+      "password": "uptm123",
+      "email": "kl2408016848@student.uptm.edu.my",
+      "matricNo": "AM2408016848",
+      "phone": "01157195053"
+    }
+  },
+  
+  "staff": {
+    "STF001": {
+      "name": "Mohamad Nizam Adhaa",
+      "password": "staff123",
+      "email": "nizam@uptm.edu.my",
+      "staffId": "STF001",
+      "phone": "0123334444"
+    }
+  }
+}

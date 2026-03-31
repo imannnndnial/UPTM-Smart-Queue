@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "750707323311",
+    "firebase_url": "https://uptm-smartqueue-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "uptm-smartqueue",
+    "storage_bucket": "uptm-smartqueue.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750707323311:android:2c21125d704e095c4f3f5a",
+        "android_client_info": {
+          "package_name": "com.example.uptmqueue"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQI4UpdO9hQXL9Ddx4pfwBQ_L_BZQJ1O4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

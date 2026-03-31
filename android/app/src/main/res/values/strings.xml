@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">UPTM Queue</string>
+
+    <!-- Login Screen -->
+    <string name="student_login">Student Login</string>
+    <string name="app_title">Bursary Smart Queue</string>
+    <string name="app_subtitle">University Services Portal</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="welcome_description">Enter your credentials to access the queue system</string>
+    <string name="student_id_number">Student ID Number</string>
+    <string name="student_id_hint">Ex: AM**********</string>
+    <string name="password">Password</string>
+    <string name="password_hint">••••••••</string>
+    <string name="sign_in">Sign In</string>
+
+
+    <!-- Content Descriptions -->
+    <string name="university_building">University Building</string>
+    <string name="back_button">Back</string>
+
+    <!-- Error Messages -->
+    <string name="error_empty_student_id">Please enter your Student ID</string>
+    <string name="error_empty_password">Please enter your password</string>
+    <string name="error_invalid_credentials">Invalid Student ID or Password</string>
+    <string name="error_network">Network error. Please try again</string>
+
+    <string name="notifications">Notifications</string>
+    <string name="my_tickets">My Tickets</string>
+    <string name="live_chat">Live Chat</string>
+    <string name="payment">Payment</string>
+    <string name="faq">FAQ</string>
+    <string name="join_virtual_queue">Join Virtual Queue</string>
+    <string name="skip_physical_line">Skip the physical line</string>
+    <string name="service_status">Service Status</string>
+    <string name="live_update">Live Update</string>
+    <string name="wait_time">WAIT TIME</string>
+    <string name="recent_announcements">Recent Announcements</string>
+
+    <!-- My Tickets strings -->
+    <string name="active_ticket">Active Ticket</string>
+    <string name="view_in_line">View In Line</string>
+    <string name="position">POSITION</string>
+    <string name="est_wait">EST WAIT</string>
+    <string name="ahead_of_you">ahead of you</string>
+    <string name="mins">mins</string>
+    <string name="cancel">Cancel</string>
+    <string name="history">History</string>
+    <string name="no_active_ticket">No Active Ticket</string>
+    <string name="join_queue_to_start">Join a queue to get started</string>
+    <string name="no_ticket_history">No ticket history</string>
+    <string name="duration">Duration</string>
+    <string name="completed">Completed</string>
+    <string name="cancelled">Cancelled</string>
+    <string name="by_student">By Student</string>
+</resources>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardHistory"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Status Icon Background -->
+        <View
+            android:id="@+id/statusIconBg"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/circle_background"
+            android:backgroundTint="#064E3B"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Status Icon -->
+        <ImageView
+            android:id="@+id/ivStatusIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_check_circle"
+            app:layout_constraintBottom_toBottomOf="@id/statusIconBg"
+            app:layout_constraintEnd_toEndOf="@id/statusIconBg"
+            app:layout_constraintStart_toStartOf="@id/statusIconBg"
+            app:layout_constraintTop_toTopOf="@id/statusIconBg"
+            app:tint="#10B981"
+            tools:src="@drawable/ic_check_circle" />
+
+        <!-- Service Name -->
+        <TextView
+            android:id="@+id/tvHistoryServiceName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="Financial Aid Office"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/tvHistoryStatus"
+            app:layout_constraintStart_toEndOf="@id/statusIconBg"
+            app:layout_constraintTop_toTopOf="@id/statusIconBg" />
+
+        <!-- Status Text -->
+        <TextView
+            android:id="@+id/tvHistoryStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:text="Completed"
+            android:textColor="#10B981"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Ticket Number -->
+        <TextView
+            android:id="@+id/tvHistoryTicketNumber"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:text="Ticket #B-050 • Oct 23, 2024"
+            android:textColor="@color/gray_text"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toStartOf="@id/tvHistoryDuration"
+            app:layout_constraintStart_toEndOf="@id/statusIconBg"
+            app:layout_constraintTop_toBottomOf="@id/tvHistoryServiceName" />
+
+        <!-- Duration/Additional Info -->
+        <TextView
+            android:id="@+id/tvHistoryDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Duration: 8m"
+            android:textColor="@color/gray_text"
+            android:textSize="11sp"
+            app:layout_constraintBottom_toBottomOf="@id/tvHistoryTicketNumber"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvHistoryTicketNumber" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
